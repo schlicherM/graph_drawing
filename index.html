@@ -17,16 +17,34 @@
     d3.json("data.json").then(function(data) {
         console.log(data); // Ausgabe der geladenen Daten
 
-        // Durchlaufe die JSON-Daten und füge Knoten und Kanten zum Graphen hinzu
+        // Durchlaufe die JSON-Daten und füge Knoten zum Graphen hinzu
         data.nodes.forEach(function(node) {
             // Füge Athleten und Sport als Knoten hinzu, falls sie noch nicht im Graphen sind
             if (!graph.nodes.find(n => n.id === node.id)) {
-                graph.nodes.push({ id: node.id, name: node.name, category: "athlete" });
+                var category = node.noc ? "Country" : "Sport";
+                var color = category === "Country" ? "green" : "orange";  
+                graph.nodes.push({ id: node.id, name: node.name, abbriviation: node.noc, category: category, color: color});
             }
         });
 
+        // Füge eine Kraftlayout-Simulation hinzu
+        var simulation = d3.forceSimulation(graph.nodes)
+            .force("charge", d3.forceManyBody().strength(-50)) // Abstoßungskraft zwischen Knoten
+            .force("link", d3.forceLink(data.links).id(function(d) { return d.id; })) // Verbindungen zwischen Knoten
+            .force("center", d3.forceCenter(400, 300)) // Zentriere den Graphen im SVG-Bereich
+            .on("tick", ticked); // Aktualisiere die Positionen der Knoten beim Simulieren
+
         // Wähle das SVG-Element aus
         var svg = d3.select("svg");
+
+        // Erstelle die Linien (Kanten)
+        var link = svg.selectAll(".link")
+            .data(data.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .attr("stroke", "#999")
+            .attr("stroke-opacity", 0.6)
+            .attr("stroke-width", "2px");
 
         // Erstelle die Knoten
         var node = svg.selectAll(".node")
@@ -34,9 +52,20 @@
             .enter().append("circle")
             .attr("class", "node")
             .attr("r", 8)
-            .attr("fill", "blue")
-            .attr("cx", function(d) { return Math.random() * 800; }) // Zufällige x-Position
-            .attr("cy", function(d) { return Math.random() * 600; }); // Zufällige y-Position
+            .attr("fill", function(d) { return d.color; });
+
+        // Funktion zur Aktualisierung der Positionen der Knoten und Linien
+        function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        }
 
     }).catch(function(error) {
         console.log("Fehler beim Laden der Daten:", error);
