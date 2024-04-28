@@ -1,43 +1,46 @@
 <!DOCTYPE html>
-<div id="container"></div>
-<script type="module">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olympische Spiele Visualisierung</title>
+  <!-- load D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <svg width="800" height="600"></svg>
+  <script>
+     // Erstelle ein leeres Objekt zum Speichern der Knoten und Kanten
+     var graph = { nodes: [], links: [] };
 
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    // Lade die Daten
+    d3.json("data.json").then(function(data) {
+        console.log(data); // Ausgabe der geladenen Daten
 
-// Declare the chart dimensions and margins.
-const width = 640;
-const height = 400;
-const marginTop = 20;
-const marginRight = 20;
-const marginBottom = 30;
-const marginLeft = 40;
+        // Durchlaufe die JSON-Daten und füge Knoten und Kanten zum Graphen hinzu
+        data.nodes.forEach(function(node) {
+            // Füge Athleten und Sport als Knoten hinzu, falls sie noch nicht im Graphen sind
+            if (!graph.nodes.find(n => n.id === node.id)) {
+                graph.nodes.push({ id: node.id, name: node.name, category: "athlete" });
+            }
+        });
 
-// Declare the x (horizontal position) scale.
-const x = d3.scaleUtc()
-    .domain([new Date("2023-01-01"), new Date("2024-01-01")])
-    .range([marginLeft, width - marginRight]);
+        // Wähle das SVG-Element aus
+        var svg = d3.select("svg");
 
-// Declare the y (vertical position) scale.
-const y = d3.scaleLinear()
-    .domain([0, 100])
-    .range([height - marginBottom, marginTop]);
+        // Erstelle die Knoten
+        var node = svg.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("circle")
+            .attr("class", "node")
+            .attr("r", 8)
+            .attr("fill", "blue")
+            .attr("cx", function(d) { return Math.random() * 800; }) // Zufällige x-Position
+            .attr("cy", function(d) { return Math.random() * 600; }); // Zufällige y-Position
 
-// Create the SVG container.
-const svg = d3.create("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-// Add the x-axis.
-svg.append("g")
-    .attr("transform", `translate(0,${height - marginBottom})`)
-    .call(d3.axisBottom(x));
-
-// Add the y-axis.
-svg.append("g")
-    .attr("transform", `translate(${marginLeft},0)`)
-    .call(d3.axisLeft(y));
-
-// Append the SVG element.
-container.append(svg.node());
-
-</script>
+    }).catch(function(error) {
+        console.log("Fehler beim Laden der Daten:", error);
+    });
+  </script>
+</body>
+</html>
