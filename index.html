@@ -4,22 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Olympische Spiele Visualisierung</title>
-  <!-- load D3.js -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .label {
+      font-size: 11px;
+    }
+  </style>
 </head>
 <body>
-  <svg width="800" height="600"></svg>
+  <svg width="1920" height="1080"></svg>
   <script>
-     // Erstelle ein leeres Objekt zum Speichern der Knoten und Kanten
-     var graph = { nodes: [], links: [] };
+    var graph = { nodes: [], links: [] };
 
-    // Lade die Daten
     d3.json("data.json").then(function(data) {
-        console.log(data); // Ausgabe der geladenen Daten
-
-        // Durchlaufe die JSON-Daten und füge Knoten zum Graphen hinzu
         data.nodes.forEach(function(node) {
-            // Füge Athleten und Sport als Knoten hinzu, falls sie noch nicht im Graphen sind
             if (!graph.nodes.find(n => n.id === node.id)) {
                 var category = node.noc ? "Country" : "Sport";
                 var color = category === "Country" ? "green" : "orange";  
@@ -27,17 +25,55 @@
             }
         });
 
-        // Füge eine Kraftlayout-Simulation hinzu
-        var simulation = d3.forceSimulation(graph.nodes)
-            .force("charge", d3.forceManyBody().strength(-50)) // Abstoßungskraft zwischen Knoten
-            .force("link", d3.forceLink(data.links).id(function(d) { return d.id; })) // Verbindungen zwischen Knoten
-            .force("center", d3.forceCenter(400, 300)) // Zentriere den Graphen im SVG-Bereich
-            .on("tick", ticked); // Aktualisiere die Positionen der Knoten beim Simulieren
+        var medalsByCategory = {};
 
-        // Wähle das SVG-Element aus
+        data.links.forEach(function(link) {
+            link.attr.forEach(function(attr) {
+                var category = link.source;
+
+                if (!medalsByCategory[category]) {
+                    medalsByCategory[category] = 1;
+                } else {
+                    medalsByCategory[category]++;
+                }
+            });
+        });
+
+        var medalsByCountry = {};
+
+        data.links.forEach(function(link) {
+            var sourceCountry = link.target;
+
+            if (!medalsByCountry[sourceCountry]) {
+                medalsByCountry[sourceCountry] = 0;
+            }
+
+            link.attr.forEach(function(attr) {
+                medalsByCountry[sourceCountry]++;
+            });
+        });
+
+        var maxMedals = Math.max(...Object.values(medalsByCountry));
+        var minMedals = Math.min(...Object.values(medalsByCountry));
+        var maxNodeSize = 40;
+        var minNodeSize = 8;
+
+        graph.nodes.forEach(function(node) {
+            if (node.category === "Country" && medalsByCountry[node.id]) {
+                var normalizedSize = (medalsByCountry[node.id] - minMedals) / (maxMedals - minMedals);
+                var nodeSize = (normalizedSize * (maxNodeSize - minNodeSize)) + minNodeSize;
+                node.size = nodeSize;
+            }
+        });
+
+        var simulation = d3.forceSimulation(graph.nodes)
+            .force("charge", d3.forceManyBody().strength(-400))
+            .force("link", d3.forceLink(data.links).id(function(d) { return d.id; }))
+            .force("center", d3.forceCenter(1920/2, 1080/2))
+            .on("tick", ticked);
+
         var svg = d3.select("svg");
 
-        // Erstelle die Linien (Kanten)
         var link = svg.selectAll(".link")
             .data(data.links)
             .enter().append("line")
@@ -46,15 +82,76 @@
             .attr("stroke-opacity", 0.6)
             .attr("stroke-width", "2px");
 
-        // Erstelle die Knoten
-        var node = svg.selectAll(".node")
+        var greenNodes = graph.nodes.filter(function(node) {
+            return node.color != "orange";
+        });
+
+        var orangeNodes = graph.nodes.filter(function(node) {
+            return node.color === "orange";
+        });
+
+        var node = svg.selectAll(".greenNode")
             .data(graph.nodes)
             .enter().append("circle")
-            .attr("class", "node")
-            .attr("r", 8)
+            .attr("class", "greenNode")
+            .attr("r", function(d) { 
+                return d.size || 8; 
+            })
+            .attr("fill", function(d) { return d.color; })
+            .attr("stroke", "black") 
+            .attr("stroke-width", 1); 
+
+        var node2 = svg.selectAll(".orangeNode")
+            .data(orangeNodes)
+            .enter().append("circle")
+            .attr("class", "orangeNode")
+            .attr("r", function(d) { 
+                return Math.sqrt(medalsByCategory[d.name]) * 0.5; 
+            })
             .attr("fill", function(d) { return d.color; });
 
-        // Funktion zur Aktualisierung der Positionen der Knoten und Linien
+        var label = svg.selectAll(".label")
+            .data(orangeNodes) 
+            .enter().append("text")
+            .attr("class", "label")
+            .attr("dx", "-1.3333em")
+            .attr("dy", "1em")
+            .text(function(d) { return "(" + medalsByCategory[d.name]+ ")" });
+
+        
+        var  medalAmountLabel = svg.selectAll(".labelMedal")
+            .data(greenNodes) 
+            .enter().append("text")
+            .attr("class", "labelMedal")
+            .attr("dx", "-1.3em")
+            .attr("dy", "1em")
+            .style("font-size", function(d) { 
+                var fontSize = d.size * 0.5; 
+                return fontSize + "px"; })
+            .text(function(d) { return "(" + medalsByCountry[d.abbriviation]+ ")" });
+
+        var labelCategory = svg.selectAll(".labelCategory")
+            .data(orangeNodes) 
+            .enter().append("text")
+            .attr("class", "label")
+            .attr("dx", "-2em")
+            .attr("dy", "0em")
+            .text(function(d) { return d.name.toUpperCase(); });    
+
+        var countryLabel = svg.selectAll(".countryLabel")
+            .data(greenNodes)
+            .enter().append("text")
+            .attr("class", "label")
+            .attr("dx", "-1em")
+            .attr("dy", "0em")
+            .style("font-size", function(d) { 
+                var fontSize = d.size * 0.8; 
+                return fontSize + "px"; })
+            .attr("fill", "white")
+            .text(function(d) { 
+                return d.abbriviation; });
+
+
         function ticked() {
             link
                 .attr("x1", function(d) { return d.source.x; })
@@ -65,6 +162,25 @@
             node
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
+                
+            node2
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+
+            label.attr("x", function(d) { return d.x; })
+                 .attr("y", function(d) { return d.y; });
+
+            labelCategory
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y; });
+            
+            countryLabel
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y; });
+               
+            medalAmountLabel
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y; });
         }
 
     }).catch(function(error) {
