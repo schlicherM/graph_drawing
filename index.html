@@ -1,191 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olympische Spiele Visualisierung</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    .label {
-      font-size: 11px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Chart by Country</title>
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 300;
+            fill: #242424;
+            text-align: center;
+            text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
+            cursor: default;
+        }
+        .legend {
+            font-family: 'Raleway', sans-serif;
+            fill: #333333;
+        }
+        .tooltip {
+            fill: #333333;
+        }
+        .chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chart {
+            margin: 20px;
+        }
+        .label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <svg width="1920" height="1080"></svg>
-  <script>
-    var graph = { nodes: [], links: [] };
+    <div class="chart-container" id="chart-container"></div>
 
-    d3.json("data.json").then(function(data) {
-        data.nodes.forEach(function(node) {
-            if (!graph.nodes.find(n => n.id === node.id)) {
-                var category = node.noc ? "Country" : "Sport";
-                var color = category === "Country" ? "green" : "orange";  
-                graph.nodes.push({ id: node.id, name: node.name, abbriviation: node.noc, category: category, color: color});
-            }
-        });
+    <script src="radarChart.js"></script>    
+    <script>
+        /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
 
-        var medalsByCategory = {};
+        ////////////////////////////////////////////////////////////// 
+        //////////////////////// Set-Up ////////////////////////////// 
+        ////////////////////////////////////////////////////////////// 
+        var margin = {top: 50, right: 50, bottom: 50, left: 50},
+            width = 100,
+            height = width;
 
-        data.links.forEach(function(link) {
-            link.attr.forEach(function(attr) {
-                var category = link.source;
+        ////////////////////////////////////////////////////////////// 
+        /////////////////////// Fetch Data ///////////////////////////
+        //////////////////////////////////////////////////////////////
+        var continents = {
+            "Oceania" : ["ASA", "AUS", "COK", "FIJ", "FSM", "GUM", "KIR", "MHL", "NRU", "NZL", "PLW", "PNG", "SAM", "SOL", "TGA", "TUV", "VAN"],
+            "Europe" : ["ALB", "AND", "ARM", "AUT", "AZE", "BLR", "BEL", "BIH", "BUL", "CRO", "CYP", "CZE", "DEN", "EST", "FIN", "FRA", "GEO", "GER","GBR", "GRE", "HUN", "ISL", "IRL", "ISR", "ITA", "KOS", "LAT", "LIE", "LTU", "LUX", "MLT", "MDA", "MON", "MNE", "NED", "MKD", "NOR", "POL", "POR", "ROU", "RUS", "SMR", "SRB", "SVK","SLO", "ESP", "SWE", "SUI", "TUR", "UKR"],
+            "America" : ["ANT", "ARG", "ARU", "BAH", "BAR", "BIZ", "BER", "BOL", "BRA", "IVB", "CAN", "CAY", "CHI", "COL", "CRC", "CUB", "DMA", "DOM", "ECU", "ESA", "GRN", "GUA", "GUY", "HAI", "HON", "JAM", "MEX", "NCA", "PAN", "PAR", "PER", "PUR", "SKN", "LCA", "VIN", "SUR", "TTO", "USA", "URU", "VEN", "ISV"],
+            "Africa" : ["ALG", "EGY", "LBA", "MAR", "SUD", "TUN", "BEN", "BUR", "CPV", "GAM", "GHA", "GUI", "GBS", "CIV", "LBR", "MLI", "MTN", "NIG", "NGR", "SEN", "SLE", "TOG", "CMR", "CAF", "CHA", "CGO", "COD", "GEQ", "GAB", "STP", "BDI", "DJI", "ERI", "ETH", "KEN", "RWA", "SEY", "SOM", "SSD", "TAN", "UGA", "ANG", "BOT", "COM", "SWZ", "LES", "MAD", "MAW", "MRI", "MOZ", "NAM", "RSA", "ZAM", "ZIM"],
+            "Asia" : ["BRN", "IRI", "IRQ", "JOR", "KUW", "LBN", "OMA", "PLE", "QAT", "KSA", "SYR", "UAE", "YEM", "AFG", "KAZ", "KGZ", "TJK", "TKM", "UZB", "BAN", "BHU", "IND", "MDV", "NEP", "PAK", "SRI", "CHN", "HKG", "MAC", "JPN", "PRK", "KOR", "TPE", "MGL", "BRU", "CAM", "INA", "LAO", "MAS", "MYA", "PHI", "SGP", "THA", "TLS", "VIE"]
+        };
 
-                if (!medalsByCategory[category]) {
-                    medalsByCategory[category] = 1;
-                } else {
-                    medalsByCategory[category]++;
+        // Calculate total medals for each category across all countries
+        function calculateTotalMedals(jsonData) {
+            let totalMedals = {};
+            jsonData.links.forEach(link => {
+                let category = link.source;  // Use link.source to get the category
+                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
+                    link.attr.forEach(attr => {
+                        if (!totalMedals[category]) {
+                            totalMedals[category] = 0;
+                        }
+                        totalMedals[category]++;
+                    });
                 }
             });
-        });
-
-        var medalsByCountry = {};
-
-        data.links.forEach(function(link) {
-            var sourceCountry = link.target;
-
-            if (!medalsByCountry[sourceCountry]) {
-                medalsByCountry[sourceCountry] = 0;
-            }
-
-            link.attr.forEach(function(attr) {
-                medalsByCountry[sourceCountry]++;
-            });
-        });
-
-        var maxMedals = Math.max(...Object.values(medalsByCountry));
-        var minMedals = Math.min(...Object.values(medalsByCountry));
-        var maxNodeSize = 40;
-        var minNodeSize = 8;
-
-        graph.nodes.forEach(function(node) {
-            if (node.category === "Country" && medalsByCountry[node.id]) {
-                var normalizedSize = (medalsByCountry[node.id] - minMedals) / (maxMedals - minMedals);
-                var nodeSize = (normalizedSize * (maxNodeSize - minNodeSize)) + minNodeSize;
-                node.size = nodeSize;
-            }
-        });
-
-        var simulation = d3.forceSimulation(graph.nodes)
-            .force("charge", d3.forceManyBody().strength(-400))
-            .force("link", d3.forceLink(data.links).id(function(d) { return d.id; }))
-            .force("center", d3.forceCenter(1920/2, 1080/2))
-            .on("tick", ticked);
-
-        var svg = d3.select("svg");
-
-        var link = svg.selectAll(".link")
-            .data(data.links)
-            .enter().append("line")
-            .attr("class", "link")
-            .attr("stroke", "#999")
-            .attr("stroke-opacity", 0.6)
-            .attr("stroke-width", "2px");
-
-        var greenNodes = graph.nodes.filter(function(node) {
-            return node.color != "orange";
-        });
-
-        var orangeNodes = graph.nodes.filter(function(node) {
-            return node.color === "orange";
-        });
-
-        var node = svg.selectAll(".greenNode")
-            .data(graph.nodes)
-            .enter().append("circle")
-            .attr("class", "greenNode")
-            .attr("r", function(d) { 
-                return d.size || 8; 
-            })
-            .attr("fill", function(d) { return d.color; })
-            .attr("stroke", "black") 
-            .attr("stroke-width", 1); 
-
-        var node2 = svg.selectAll(".orangeNode")
-            .data(orangeNodes)
-            .enter().append("circle")
-            .attr("class", "orangeNode")
-            .attr("r", function(d) { 
-                return Math.sqrt(medalsByCategory[d.name]) * 0.5; 
-            })
-            .attr("fill", function(d) { return d.color; });
-
-        var label = svg.selectAll(".label")
-            .data(orangeNodes) 
-            .enter().append("text")
-            .attr("class", "label")
-            .attr("dx", "-1.3333em")
-            .attr("dy", "1em")
-            .text(function(d) { return "(" + medalsByCategory[d.name]+ ")" });
-
-        
-        var  medalAmountLabel = svg.selectAll(".labelMedal")
-            .data(greenNodes) 
-            .enter().append("text")
-            .attr("class", "labelMedal")
-            .attr("dx", "-1.3em")
-            .attr("dy", "1em")
-            .style("font-size", function(d) { 
-                var fontSize = d.size * 0.5; 
-                return fontSize + "px"; })
-            .text(function(d) { return "(" + medalsByCountry[d.abbriviation]+ ")" });
-
-        var labelCategory = svg.selectAll(".labelCategory")
-            .data(orangeNodes) 
-            .enter().append("text")
-            .attr("class", "label")
-            .attr("dx", "-2em")
-            .attr("dy", "0em")
-            .text(function(d) { return d.name.toUpperCase(); });    
-
-        var countryLabel = svg.selectAll(".countryLabel")
-            .data(greenNodes)
-            .enter().append("text")
-            .attr("class", "label")
-            .attr("dx", "-1em")
-            .attr("dy", "0em")
-            .style("font-size", function(d) { 
-                var fontSize = d.size * 0.8; 
-                return fontSize + "px"; })
-            .attr("fill", "white")
-            .text(function(d) { 
-                return d.abbriviation; });
-
-
-        function ticked() {
-            link
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-
-            node
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
-                
-            node2
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
-
-            label.attr("x", function(d) { return d.x; })
-                 .attr("y", function(d) { return d.y; });
-
-            labelCategory
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y; });
-            
-            countryLabel
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y; });
-               
-            medalAmountLabel
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y; });
+            return totalMedals;
         }
 
-    }).catch(function(error) {
-        console.log("Fehler beim Laden der Daten: ", error);
-    });
-  </script>
+        // Filter links by country
+        function filterLinksByCountry(links, country) {
+            return links.filter(link => link.target === country);
+        }
+
+        // Calculate medals for each category by country
+        function calculateMedalsByCategory(filteredLinks, categories) {
+            let categoryTotals = {};
+            let totalMedalsForCountry = 0;
+
+            filteredLinks.forEach(link => {
+                let category = link.source;  // Use link.source to get the category
+                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
+                    if (!categoryTotals[category]) {
+                        categoryTotals[category] = 0;
+                    }
+                    link.attr.forEach(attr => {
+                        categoryTotals[category]++;
+                        totalMedalsForCountry++;  // Increment total medals for the country
+                    });
+                }
+            });
+
+            return categories.map(category => ({
+                axis: category,
+                value: (categoryTotals[category] / totalMedalsForCountry) || 0  // Normalize by total medals for the country
+            }));
+        }
+
+        // Prepare data for radar chart for each country
+        function prepareRadarChartData(data) {
+            const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
+            let radarData = {};
+
+            data.nodes.forEach(node => {
+                if (node.noc) {  // Ensure node has a country code (noc)
+                    let filteredLinks = filterLinksByCountry(data.links, node.id);
+                    let countryData = calculateMedalsByCategory(filteredLinks, categories);
+                    radarData[node.noc] = countryData;
+                }
+            });
+
+            return radarData;
+        }
+
+        // Function to sort the data according to the provided order
+        function sortData(data, order) {
+            const orderMap = order.reduce((acc, axis, index) => {
+                acc[axis] = index;
+                return acc;
+            }, {});
+
+            const sortedData = {};
+
+            for (const region in data) {
+                sortedData[region] = data[region].slice().sort((a, b) => {
+                    return orderMap[a.axis] - orderMap[b.axis];
+                });
+            }
+
+            return sortedData;
+        }
+
+        // Fetch JSON data from URL
+        fetch('data.json')
+            .then(response => response.json())
+            .then(jsonData => {
+                // Process the JSON data
+                const radarChartData = prepareRadarChartData(jsonData);
+
+                // Define the category order
+                const categoryOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
+                const sortedData = sortData(radarChartData, categoryOrder);
+
+                // Render the radar charts for each country
+                var color = d3.scale.ordinal().range(["#00A0B0"]);
+
+                for (let country in sortedData) {
+                    let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
+                    chartContainer.append("div").attr("class", "label").text(country);
+
+                    let radarChartOptions = {
+                        w: width,
+                        h: height,
+                        margin: margin,
+                        maxValue: 0.3,
+                        levels: 5,
+                        roundStrokes: false,
+                        color: color
+                    };
+
+                    // Create a unique class for each radar chart
+                    let chartClass = "radarChart-" + country.replace(/\s+/g, '');
+                    chartContainer.append("div").attr("class", chartClass);
+                    RadarChart("." + chartClass, [sortedData[country]], radarChartOptions);
+                }
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+    </script>
 </body>
 </html>
