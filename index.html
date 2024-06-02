@@ -89,98 +89,168 @@
         }
 
         // Calculate medals for each category by country
-        function calculateMedalsByCategory(filteredLinks, categories) {
-            let categoryTotals = {};
-            let totalMedalsForCountry = 0;
+function calculateMedalsByCategory(filteredLinks, categories) {
+    let categoryTotals = {};
+    let totalMedalsForCountry = 0;
 
-            filteredLinks.forEach(link => {
-                let category = link.source;  // Use link.source to get the category
-                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
-                    if (!categoryTotals[category]) {
-                        categoryTotals[category] = 0;
-                    }
-                    link.attr.forEach(attr => {
-                        categoryTotals[category]++;
-                        totalMedalsForCountry++;  // Increment total medals for the country
-                    });
-                }
-            });
-
-            return categories.map(category => ({
-                axis: category,
-                value: (categoryTotals[category] / totalMedalsForCountry) || 0  // Normalize by total medals for the country
-            }));
-        }
-
-        // Prepare data for radar chart for each country
-        function prepareRadarChartData(data) {
-            const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
-            let radarData = {};
-
-            data.nodes.forEach(node => {
-                if (node.noc) {  // Ensure node has a country code (noc)
-                    let filteredLinks = filterLinksByCountry(data.links, node.id);
-                    let countryData = calculateMedalsByCategory(filteredLinks, categories);
-                    radarData[node.noc] = countryData;
-                }
-            });
-
-            return radarData;
-        }
-
-        // Function to sort the data according to the provided order
-        function sortData(data, order) {
-            const orderMap = order.reduce((acc, axis, index) => {
-                acc[axis] = index;
-                return acc;
-            }, {});
-
-            const sortedData = {};
-
-            for (const region in data) {
-                sortedData[region] = data[region].slice().sort((a, b) => {
-                    return orderMap[a.axis] - orderMap[b.axis];
-                });
+    filteredLinks.forEach(link => {
+        let category = link.source;  // Use link.source to get the category
+        if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
+            if (!categoryTotals[category]) {
+                categoryTotals[category] = 0;
             }
-
-            return sortedData;
+            link.attr.forEach(attr => {
+                categoryTotals[category]++;
+                totalMedalsForCountry++;  // Increment total medals for the country
+            });
         }
+    });
 
-        // Fetch JSON data from URL
-        fetch('data.json')
-            .then(response => response.json())
-            .then(jsonData => {
-                // Process the JSON data
-                const radarChartData = prepareRadarChartData(jsonData);
+    return categories.map(category => ({
+        axis: category,
+        value: (categoryTotals[category] / totalMedalsForCountry) || 0  // Normalize by total medals for the country
+    }));
+}
 
-                // Define the category order
-                const categoryOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
-                const sortedData = sortData(radarChartData, categoryOrder);
+// Prepare data for radar chart for each country
+function prepareRadarChartData(data) {
+    const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
+    let radarData = {};
 
-                // Render the radar charts for each country
-                var color = d3.scale.ordinal().range(["#00A0B0"]);
+    data.nodes.forEach(node => {
+        if (node.noc) {  // Ensure node has a country code (noc)
+            let filteredLinks = filterLinksByCountry(data.links, node.id);
+            let countryData = calculateMedalsByCategory(filteredLinks, categories);
+            radarData[node.noc] = countryData;
+        }
+    });
 
-                for (let country in sortedData) {
-                    let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
-                    chartContainer.append("div").attr("class", "label").text(country);
+    return radarData;
+}
 
-                    let radarChartOptions = {
-                        w: width,
-                        h: height,
-                        margin: margin,
-                        maxValue: 0.3,
-                        levels: 5,
-                        roundStrokes: false,
-                        color: color
-                    };
+// Euclidean distance function
+function euclideanDistance(a, b) {
+    return Math.sqrt(a.reduce((sum, value, index) => sum + Math.pow(value.value - b[index].value, 2), 0));
+}
 
-                    // Create a unique class for each radar chart
-                    let chartClass = "radarChart-" + country.replace(/\s+/g, '');
-                    chartContainer.append("div").attr("class", chartClass);
-                    RadarChart("." + chartClass, [sortedData[country]], radarChartOptions);
+// K-means clustering with country names
+function kmeans(data, k, countryNames) {
+    let centroids = data.slice(0, k).map((d, i) => ({ data: d, countries: [countryNames[i]] }));
+    let clusters = Array.from({ length: k }, () => ({ data: [], countries: [] }));
+
+    let change = true;
+    while (change) {
+        change = false;
+
+        // Assign points to clusters
+        clusters.forEach(cluster => {
+            cluster.data.length = 0;
+            cluster.countries.length = 0;
+        });
+
+        data.forEach((point, idx) => {
+            let minDistance = Infinity;
+            let clusterIndex = 0;
+            centroids.forEach((centroid, index) => {
+                let distance = euclideanDistance(point, centroid.data);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    clusterIndex = index;
                 }
-            })
-            .catch(error => console.error('Error loading JSON:', error));
+            });
+            clusters[clusterIndex].data.push(point);
+            clusters[clusterIndex].countries.push(countryNames[idx]);
+        });
+
+        // Update centroids
+        clusters.forEach((cluster, index) => {
+            if (cluster.data.length === 0) return;
+            let newCentroid = cluster.data[0].map((_, i) => ({
+                axis: cluster.data[0][i].axis,
+                value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
+            }));
+            if (euclideanDistance(newCentroid, centroids[index].data) > 0) {
+                centroids[index].data = newCentroid;
+                centroids[index].countries = cluster.countries.slice();
+                change = true;
+            }
+        });
+    }
+
+    return clusters;
+}
+
+// Calculate average medals for each cluster
+function calculateClusterAverages(clusters) {
+    return clusters.map(cluster => {
+        if (cluster.data.length === 0) return { data: [], countries: cluster.countries };
+        let avgData = cluster.data[0].map((_, i) => ({
+            axis: cluster.data[0][i].axis,
+            value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
+        }));
+        return { data: avgData, countries: cluster.countries };
+    });
+}
+
+// Fetch JSON data from URL
+fetch('data.json')
+    .then(response => response.json())
+    .then(jsonData => {
+        // Process the JSON data
+        const radarChartData = prepareRadarChartData(jsonData);
+
+        // Convert radar chart data to an array for clustering
+        const dataForClustering = Object.values(radarChartData);
+        const countryNames = Object.keys(radarChartData);
+
+        // Number of clusters (adjust as needed)
+        const numClusters = 7;
+
+        // Perform k-means clustering
+        const clusters = kmeans(dataForClustering, numClusters, countryNames);
+
+        // Calculate average medals for each cluster
+        const clusterAverages = calculateClusterAverages(clusters);
+
+        // Render the radar charts for each cluster
+        var color = d3.scale.ordinal().range(["#00A0B0"]);
+
+        clusterAverages.forEach((clusterAvg, clusterIndex) => {
+            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart-container");
+
+            // Create a container for the chart and country list
+            let chartAndCountriesContainer = chartContainer.append("div").attr("class", "chart-and-countries");
+
+            // Container for the radar chart
+            let radarChartContainer = chartAndCountriesContainer.append("div").attr("class", "chart");
+
+            // Container for the country list
+            let countryListContainer = chartAndCountriesContainer.append("div").attr("class", "country-list");
+
+            // Add the country list
+            countryListContainer.append("div").attr("class", "label").text("Countries:");
+            clusterAvg.countries.forEach(country => {
+                countryListContainer.append("div").attr("class", "country").text(country);
+            });
+
+            let radarChartOptions = {
+                w: width,
+                h: height,
+                margin: margin,
+                maxValue: 0.3,
+                levels: 5,
+                roundStrokes: false,
+                color: color
+            };
+
+            // Create a unique class for each radar chart
+            let chartClass = "radarChart-Cluster" + (clusterIndex + 1);
+            radarChartContainer.append("div").attr("class", chartClass);
+            RadarChart("." + chartClass, [clusterAvg.data], radarChartOptions);
+        });
+    })
+    .catch(error => console.error('Error loading JSON:', error));
+
     </script>
 </body>
 </html>
