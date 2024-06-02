@@ -1,46 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Chart by Country</title>
-    <!-- Google fonts -->
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
-    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
-    <!-- D3.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-    <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 11px;
-            font-weight: 300;
-            fill: #242424;
-            text-align: center;
-            text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 -1px 0 #fff;
-            cursor: default;
-        }
-        .legend {
-            font-family: 'Raleway', sans-serif;
-            fill: #333333;
-        }
-        .tooltip {
-            fill: #333333;
-        }
-        .chart-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .chart {
-            margin: 20px;
-        }
-        .label {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Radar Chart by Country</title>
+        <!-- Google fonts -->
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+        <!-- D3.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+        <!-- Custom CSS -->
+        <link rel="stylesheet" type="text/css" href="styles.css">
+    </head>
 <body>
     <div class="chart-container" id="chart-container"></div>
 
@@ -204,7 +175,7 @@ fetch('data.json')
         const countryNames = Object.keys(radarChartData);
 
         // Number of clusters (adjust as needed)
-        const numClusters = 7;
+        const numClusters = 9;
 
         // Perform k-means clustering
         const clusters = kmeans(dataForClustering, numClusters, countryNames);
@@ -224,20 +195,11 @@ fetch('data.json')
             // Container for the radar chart
             let radarChartContainer = chartAndCountriesContainer.append("div").attr("class", "chart");
 
-            // Container for the country list
-            let countryListContainer = chartAndCountriesContainer.append("div").attr("class", "country-list");
-
-            // Add the country list
-            countryListContainer.append("div").attr("class", "label").text("Countries:");
-            clusterAvg.countries.forEach(country => {
-                countryListContainer.append("div").attr("class", "country").text(country);
-            });
-
             let radarChartOptions = {
-                w: width,
-                h: height,
-                margin: margin,
-                maxValue: 0.3,
+                w: 80, // Fixed width
+                h: 80, // Fixed height
+                margin: { top: 40, right: 30, bottom: 40, left: 30 },
+                maxValue: 1.0, // Ensure all charts are scaled to 100% at the outer ring
                 levels: 5,
                 roundStrokes: false,
                 color: color
@@ -247,10 +209,18 @@ fetch('data.json')
             let chartClass = "radarChart-Cluster" + (clusterIndex + 1);
             radarChartContainer.append("div").attr("class", chartClass);
             RadarChart("." + chartClass, [clusterAvg.data], radarChartOptions);
+
+            // Container for the country list
+            let countryListContainer = chartAndCountriesContainer.append("div").attr("class", "country-list");
+
+            // Add the country list below the chart
+            countryListContainer.append("div").attr("class", "label").text("Countries:");
+            clusterAvg.countries.forEach(country => {
+                countryListContainer.append("div").attr("class", "country").text(country);
+            });
         });
     })
     .catch(error => console.error('Error loading JSON:', error));
-
     </script>
 </body>
 </html>
