@@ -9,6 +9,8 @@
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "axios": "^1.7.2",
-    "dotted-map": "^2.2.3"
+    "d3": "^7.9.0",
+    "dotted-map": "^2.2.3",
+    "node-fetch": "^3.3.2"
   }
 }
