@@ -13,7 +13,7 @@ function fetchGeoJSON() {
 async function generatePointsForCountry(countryFeature) {
   // Create a bounding box around the country and generate a grid of points
   const bbox = turf.bbox(countryFeature);
-  const cellSize = 40; // Adjust the cell size as needed (in degrees)
+  const cellSize = 20; // Adjust the cell size as needed (in degrees)
   const grid = turf.pointGrid(bbox, cellSize);
 
   // Filter points to ensure they are within the country boundary
@@ -25,14 +25,14 @@ async function generatePointsForCountry(countryFeature) {
 }
 
 // Create a dotted map with points for multiple countries
-async function generateMap(countryCodes, color = '#2d1a82') {
+async function generateMap(countryCodes, name, ) {
   const geojson = fetchGeoJSON();
 
   // Create a new map instance
   const map = new DottedMap({
     height: 150,
     grid: 'diagonal',
-    color,
+    color: '#2d1a82',
     radius: 0.4
   });
 
@@ -54,7 +54,7 @@ async function generateMap(countryCodes, color = '#2d1a82') {
       map.addPin({
         lat,
         lng,
-        svgOptions: { color, radius: 0.4 }  // Customize the appearance of the dots
+        svgOptions: {  color: '#2d1a82', radius: 0.4 }  // Customize the appearance of the dots
       });
     });
   }
@@ -68,7 +68,7 @@ async function generateMap(countryCodes, color = '#2d1a82') {
   });
 
   // Output the SVG to a file
-  fs.writeFileSync('dotted_map.svg', svgMap);
+  fs.writeFileSync(`./files/map_${name}.svg`, svgMap);
 }
 
 module.exports = { generateMap };

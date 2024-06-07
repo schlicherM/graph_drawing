@@ -1,5 +1,8 @@
 const fs = require('fs');
 const { generateMap } = require('./generateMap');
+const { mapCountriesToGeoJson } = require('./countryToNoc');
+const { log } = require('console');
+const { SourceTextModule } = require('vm');
 
 
  /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
@@ -154,6 +157,7 @@ function readJsonFileSync(filepath, encoding = 'utf8') {
     return JSON.parse(file);
 }
 
+
 // Fetch JSON data from URL
 function generateRadarCharts() {
     try {
@@ -161,6 +165,7 @@ function generateRadarCharts() {
 
         // Process the JSON data
         const radarChartData = prepareRadarChartData(jsonData);
+
 
         // Convert radar chart data to an array for clustering
         const dataForClustering = Object.values(radarChartData);
@@ -174,16 +179,20 @@ function generateRadarCharts() {
 
         // Calculate average medals for each cluster
         const clusterAverages = calculateClusterAverages(clusters);
+    
 
-   
-        console.log(clusterAverages[2].countries)
+        clusterAverages.forEach((clusterAvg, clusterIndex) => {
 
+            var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries)
 
-        generateMap(clusterAverages[2].countries).then(() => {
-            console.log('Dotted map created for specified countries');
-          }).catch(err => {
-            console.error(err);
-          });
+             generateMap(nocToIso,`cluster-${clusterIndex}`).then(() => {
+                console.log('Dotted map created for specified countries');
+              }).catch(err => {
+                console.error(err);
+              });
+        });
+
+        
 
     } catch (error) {
         console.error('Error generating radar charts:', error);
@@ -191,6 +200,3 @@ function generateRadarCharts() {
 }
 
 generateRadarCharts();
-/*
-
-*/
