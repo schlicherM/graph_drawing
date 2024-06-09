@@ -65,8 +65,8 @@
         };
 
         var country_to_continent_map = {};
-        for (var continent in continents) {
-            for (var country in continent) {
+        for (var continent of Object.keys(continents)) {
+            for (var country of continents[continent]) {
                 country_to_continent_map[country] = continent;
             }            
         }
@@ -88,120 +88,70 @@
             return totalMedals;
         }
 
-        function calculateTotalMedalsPerContinent(jsonData) {
+        function calculateTotalMedalsPerContinent(data, sports = []) {
             let totalMedals = {};
-            jsonData.links.forEach(link => {
-                let category = country_to_continent_map[link.target];
-                if (!totalMedals[category]) {
-                    totalMedals[category] = Object.values(link.attr).length;
+            for (const continent of Object.keys(continents)) {
+                const filtered_links = data.links.filter(
+                    link => country_to_continent_map[link.target] == continent && sports.includes(link.source)
+                );
+                totalMedals[continent] = 0;
+                for (const link of filtered_links) {
+                    totalMedals[continent] += Object.values(link.attr).length;
                 }
-                else {
-                    totalMedals[category] += Object.values(link.attr).length;
-                }
-            });
+            }
             return totalMedals;
-        }
-
-        // Filter countries by continent
-        function filterCountriesByContinent(links, continentCountries) {
-            return links.filter(link => continentCountries.includes(link.target));
-        }
-        
-        // Calculate medals for each category
-        function calculateMedalsByCategory(filteredLinks, totalMedals, categories) {
-            let categoryTotals = {};
-
-            filteredLinks.forEach(link => {
-                let category = link.source;  // Use link.source to get the category
-                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
-                    if (!categoryTotals[category]) {
-                        categoryTotals[category] = 0;
-                    }
-                    link.attr.forEach(attr => {
-                        categoryTotals[category]++;
-                    });
-                }
-            });
-
-            return categories.map(category => ({
-                axis: category,
-                value: (categoryTotals[category] / totalMedals[category]) || 0
-            }));
         }
 
         // Prepare data for radar chart
         function prepareRadarChartData(data, continents) {
-            // const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
-            // let radarData = {};
-            // const totalMedals = calculateTotalMedals(data);
-
-            // for (let continent in continents) {
-            //     let continentCountries = continents[continent];
-            //     let filteredLinks = filterCountriesByContinent(data.links, continentCountries);
-            //     let continentData = calculateMedalsByCategory(filteredLinks, totalMedals, categories);
-            //     radarData[continent] = continentData;
-            // }
-
-            // return radarData;
-
             const categories = Object.keys(continents);
-            let radarData = {};
-            const totalMedals = calculateTotalMedalsPerContinent(data);
-            
             const sports = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");
 
-            for (let sport in sports) {
+            const totalMedals = calculateTotalMedalsPerContinent(data, sports);
+            
+            let radarData = {};
+            for (const sport of sports) {
+                let medalsPerThisSport = calculateTotalMedalsPerContinent(data, [sport]);
+
                 let sportData = {};
-                for (var continent in Object.keys(continents)) {
-                    let data_filtered_by_sport = data;
-                    data_filtered_by_sport.links.filter(link => sport == link.source);
-                    let medalsPerThisSport = calculateTotalMedalsPerContinent(data_filtered_by_sport);
+                for (const continent of categories) {
                     sportData[continent] = medalsPerThisSport[continent]/totalMedals[continent];
                 }
                 radarData[sport] = sportData;
             }
-
             return radarData;
         }
 
-        // Function to sort the data according to the provided order
-        function sortData(data, order) {
-            const orderMap = order.reduce((acc, axis, index) => {
-                acc[axis] = index;
-                return acc;
-            }, {});
-
-            const sortedData = {};
-
-            for (const region in data) {
-                sortedData[region] = data[region].slice().sort((a, b) => {
-                    return orderMap[a.axis] - orderMap[b.axis];
-                });
+        function formatChartData(radarChartData){
+            formatted_data = {};
+            for (const [category, radar_data] of Object.entries(radarChartData)){
+                category_list = [];
+                for(const [continent, value] of Object.entries(radar_data)){
+                    data_point = {
+                        axis: continent,
+                        value: value
+                    };
+                    category_list.push(data_point);
+                }
+                formatted_data[category] = category_list;
             }
-
-            return sortedData;
+            return formatted_data;
         }
-
 
         // Fetch JSON data from URL
         fetch('data.json')
             .then(response => response.json())
             .then(jsonData => {
                 // Process the JSON data
-                const radarChartData = prepareRadarChartData(jsonData, continents);
-               
-                const categorieOrder = ["boating","swimming","cycling","racquets","gymnastics","fighting","shooting","equestrian","athletics"]
-
-                const sortedData = sortData(radarChartData, categorieOrder);
-                
-
+                const radarChartData = prepareRadarChartData(jsonData, continents);             
+                const formatted_data = formatChartData(radarChartData);
 
                 // Render the radar charts for each continent
                 var color = d3.scale.ordinal().range(["#00A0B0"]);
                 
-                for (let continent in sortedData) {
+                for (const sport of Object.keys(formatted_data)) {
                     let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
-                    chartContainer.append("div").attr("class", "label").text(continent);
+                    chartContainer.append("div").attr("class", "label").text(sport);
 
                     let radarChartOptions = {
                         w: width,
@@ -214,9 +164,9 @@
                     };
 
                     // Create a unique class for each radar chart
-                    let chartClass = "radarChart-" + continent.replace(/\s+/g, '');
+                    let chartClass = "radarChart-" + sport.replace(/\s+/g, '');
                     chartContainer.append("div").attr("class", chartClass);
-                    RadarChart("." + chartClass, [sortedData[continent]], radarChartOptions);
+                    RadarChart("." + chartClass, [formatted_data[sport]], radarChartOptions);
                 }
             })
             .catch(error => console.error('Error loading JSON:', error));
