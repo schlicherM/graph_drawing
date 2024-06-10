@@ -1,23 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Radar Chart by Country</title>
-        <!-- Google fonts -->
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
-        <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
-        <!-- D3.js -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-        <!-- Custom CSS -->
-        <link rel="stylesheet" type="text/css" href="styles.css">
-    </head>
-<body>
-    <div class="chart-container" id="chart-container"></div>
+const fs = require('fs');
+const { generateMap } = require('./generateMap');
+const { mapCountriesToGeoJson } = require('./countryToNoc');
+const { log } = require('console');
+const { SourceTextModule } = require('vm');
 
-    <script src="radarChart.js"></script>    
-    <script>
-        /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
+
+ /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
 
         ////////////////////////////////////////////////////////////// 
         //////////////////////// Set-Up ////////////////////////////// 
@@ -163,12 +151,21 @@ function calculateClusterAverages(clusters) {
     });
 }
 
+// Function to read JSON file
+function readJsonFileSync(filepath, encoding = 'utf8') {
+    const file = fs.readFileSync(filepath, encoding);
+    return JSON.parse(file);
+}
+
+
 // Fetch JSON data from URL
-fetch('data.json')
-    .then(response => response.json())
-    .then(jsonData => {
+function generateRadarCharts() {
+    try {
+        const jsonData = readJsonFileSync('public/data.json');
+
         // Process the JSON data
         const radarChartData = prepareRadarChartData(jsonData);
+
 
         // Convert radar chart data to an array for clustering
         const dataForClustering = Object.values(radarChartData);
@@ -182,45 +179,24 @@ fetch('data.json')
 
         // Calculate average medals for each cluster
         const clusterAverages = calculateClusterAverages(clusters);
-
-        // Render the radar charts for each cluster
-        var color = d3.scale.ordinal().range(["#00A0B0"]);
+    
 
         clusterAverages.forEach((clusterAvg, clusterIndex) => {
-            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart-container");
-
-            // Create a container for the chart and country list
-            let chartAndCountriesContainer = chartContainer.append("div").attr("class", "chart-and-countries");
-
-            // Container for the radar chart
-            let radarChartContainer = chartAndCountriesContainer.append("div").attr("class", "chart");
-
-            let radarChartOptions = {
-                w: 80, // Fixed width
-                h: 80, // Fixed height
-                margin: { top: 40, right: 30, bottom: 40, left: 30 },
-                maxValue: 1.0, // Ensure all charts are scaled to 100% at the outer ring
-                levels: 5,
-                roundStrokes: false,
-                color: color
-            };
-
-            // Create a unique class for each radar chart
-            let chartClass = "radarChart-Cluster" + (clusterIndex + 1);
-            radarChartContainer.append("div").attr("class", chartClass);
-            RadarChart("." + chartClass, [clusterAvg.data], radarChartOptions);
-
-            // Container for the country list
-            let countryListContainer = chartAndCountriesContainer.append("div").attr("class", "country-list");
-
-            // Add the country list below the chart
-            countryListContainer.append("div").attr("class", "label").text("Countries:");
-            clusterAvg.countries.forEach(country => {
-                countryListContainer.append("div").attr("class", "country").text(country);
-            });
+            var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries);
+            clusterAverages[clusterIndex].countries = nocToIso;
         });
-    })
-    .catch(error => console.error('Error loading JSON:', error));
-    </script>
-</body>
-</html>
+        
+        generateMap(clusterAverages).then(() => {
+            console.log('Combined dotted map created for all clusters');
+        }).catch(err => {
+            console.error(err);
+        });
+
+        
+
+    } catch (error) {
+        console.error('Error generating radar charts:', error);
+    }
+}
+
+generateRadarCharts();

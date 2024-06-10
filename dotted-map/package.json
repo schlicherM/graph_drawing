@@ -1,0 +1,19 @@
+{
+  "name": "dotted-map",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@turf/turf": "^6.5.0",
+    "axios": "^1.7.2",
+    "d3": "^7.9.0",
+    "dotted-map": "^2.2.3",
+    "node-fetch": "^3.3.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
