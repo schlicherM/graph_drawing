@@ -3,6 +3,7 @@ const { generateMap } = require('./generateMap');
 const { mapCountriesToGeoJson } = require('./countryToNoc');
 const { log } = require('console');
 const { SourceTextModule } = require('vm');
+const { readJsonFileSync, getConfig } = require("./util")
 
 
  /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
@@ -87,7 +88,28 @@ function prepareRadarChartData(data) {
     return radarData;
 }
 
-// Euclidean distance function
+function distanceFunction(a, b){
+    id = getConfig("cl_distance_measure");
+    id_map = {
+        "euclidean_distance": euclideanDistance,
+        "cosine_similarity": cosineSimilarity
+    };
+    f = null;
+    if(id in id_map){
+        f = id_map[id];
+    }
+    else{
+        throw new Error("distance function id '"+id+"' is not implemented!");
+    }
+    return f(a, b);
+}
+
+function cosineSimilarity(a, b){
+    dot = (a, b) => a.map((_, i) => a[i] * b[i]).reduce((m, n) => m + n);
+    mag = (a) => Math.sqrt(a.map((_, i) => a[i] * a[i]).reduce((m, n) => m + n));
+    return dot(a, b)/(mag(a)*mag(b));
+}
+
 function euclideanDistance(a, b) {
     return Math.sqrt(a.reduce((sum, value, index) => sum + Math.pow(value.value - b[index].value, 2), 0));
 }
@@ -111,7 +133,7 @@ function kmeans(data, k, countryNames) {
             let minDistance = Infinity;
             let clusterIndex = 0;
             centroids.forEach((centroid, index) => {
-                let distance = euclideanDistance(point, centroid.data);
+                let distance = distanceFunction(point, centroid.data);
                 if (distance < minDistance) {
                     minDistance = distance;
                     clusterIndex = index;
@@ -128,7 +150,7 @@ function kmeans(data, k, countryNames) {
                 axis: cluster.data[0][i].axis,
                 value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
             }));
-            if (euclideanDistance(newCentroid, centroids[index].data) > 0) {
+            if (distanceFunction(newCentroid, centroids[index].data) > 0) {
                 centroids[index].data = newCentroid;
                 centroids[index].countries = cluster.countries.slice();
                 change = true;
@@ -150,13 +172,6 @@ function calculateClusterAverages(clusters) {
         return { data: avgData, countries: cluster.countries };
     });
 }
-
-// Function to read JSON file
-function readJsonFileSync(filepath, encoding = 'utf8') {
-    const file = fs.readFileSync(filepath, encoding);
-    return JSON.parse(file);
-}
-
 
 // Fetch JSON data from URL
 function generateRadarCharts() {
@@ -191,9 +206,6 @@ function generateRadarCharts() {
         }).catch(err => {
             console.error(err);
         });
-
-        
-
     } catch (error) {
         console.error('Error generating radar charts:', error);
     }
