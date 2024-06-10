@@ -182,14 +182,14 @@ function generateRadarCharts() {
     
 
         clusterAverages.forEach((clusterAvg, clusterIndex) => {
-
-            var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries)
-
-             generateMap(nocToIso,`cluster-${clusterIndex}`).then(() => {
-                console.log('Dotted map created for specified countries');
-              }).catch(err => {
-                console.error(err);
-              });
+            var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries);
+            clusterAverages[clusterIndex].countries = nocToIso;
+        });
+        
+        generateMap(clusterAverages).then(() => {
+            console.log('Combined dotted map created for all clusters');
+        }).catch(err => {
+            console.error(err);
         });
 
         

@@ -11,12 +11,10 @@ function fetchGeoJSON() {
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
-  // Create a bounding box around the country and generate a grid of points
   const bbox = turf.bbox(countryFeature);
-  const cellSize = 20; // Adjust the cell size as needed (in degrees)
+  const cellSize = 20;
   const grid = turf.pointGrid(bbox, cellSize);
 
-  // Filter points to ensure they are within the country boundary
   const pointsWithin = grid.features.filter(point =>
     turf.booleanPointInPolygon(point, countryFeature)
   );
@@ -25,50 +23,51 @@ async function generatePointsForCountry(countryFeature) {
 }
 
 // Create a dotted map with points for multiple countries
-async function generateMap(countryCodes, name, ) {
+async function generateMap(clusterData) {
   const geojson = fetchGeoJSON();
 
-  // Create a new map instance
   const map = new DottedMap({
     height: 150,
-    grid: 'diagonal',
-    color: '#2d1a82',
-    radius: 0.4
+    grid: 'diagonal'
   });
 
-  // Process each country
-  for (const countryCode of countryCodes) {
-    // Find the country feature by its ISO code
-    const countryFeature = geojson.features.find(feature => feature.id === countryCode);
-    if (!countryFeature) {
-      console.warn(`Country with ISO code ${countryCode} not found`);
-      continue;
-    }
+  // add colors for clusters
+  const colors = [
+    '#2d1a82', '#1a2d82', '#1a823d', '#823d1a', '#821a64', 
+    '#64821a', '#1a6482', '#821a2d', '#2d823d' 
+  ];
 
-    // Generate points for the country
-    const pointsWithin = await generatePointsForCountry(countryFeature);
+  for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
+    const { countries } = clusterData[clusterIndex];
+    const color = colors[clusterIndex % colors.length];
 
-    // Add points to the map
-    pointsWithin.forEach(point => {
-      const [lng, lat] = point.geometry.coordinates;
-      map.addPin({
-        lat,
-        lng,
-        svgOptions: {  color: '#2d1a82', radius: 0.4 }  // Customize the appearance of the dots
+    for (const countryCode of countries) {
+      const countryFeature = geojson.features.find(feature => feature.id === countryCode);
+      if (!countryFeature) {
+        console.warn(`Country with ISO code ${countryCode} not found`);
+        continue;
+      }
+
+      const pointsWithin = await generatePointsForCountry(countryFeature);
+
+      pointsWithin.forEach(point => {
+        const [lng, lat] = point.geometry.coordinates;
+        map.addPin({
+          lat,
+          lng,
+          svgOptions: { color, radius: 0.4 }
+        });
       });
-    });
+    }
   }
-
-  // Generate the SVG map
+  
   const svgMap = map.getSVG({
     width: 800,
     height: 400,
-    backgroundColor: '#1f1f1f',
-    radius: 0.4
+    backgroundColor: '#1f1f1f'
   });
 
-  // Output the SVG to a file
-  fs.writeFileSync(`./files/map_${name}.svg`, svgMap);
+  fs.writeFileSync(`./files/map_clusters.svg`, svgMap);
 }
 
 module.exports = { generateMap };
