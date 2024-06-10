@@ -172,7 +172,7 @@ function generateRadarCharts() {
         const countryNames = Object.keys(radarChartData);
 
         // Number of clusters (adjust as needed)
-        const numClusters = 9;
+        const numClusters = 5;
 
         // Perform k-means clustering
         const clusters = kmeans(dataForClustering, numClusters, countryNames);
