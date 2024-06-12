@@ -1,23 +1,45 @@
 const turf = require('@turf/turf');
+const { log } = require('console');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
+const { mapCountriesToGeoJson } = require('./countryToNoc');
 
 // Function to fetch GeoJSON data from a local file
 function fetchGeoJSON() {
-  const filePath = './node_modules/dotted-map/src/countries.geo.json';
+  const filePath = './public/countries.geo.json';
   const data = fs.readFileSync(filePath, 'utf8');
   return JSON.parse(data);
 }
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
-  const bbox = turf.bbox(countryFeature);
+
+  let bbox = turf.bbox(countryFeature);
+
+  if(countryFeature.id == "RUS") {
+    bbox = [-10, 41.151416, 200, 81.2504]
+  }
+
   const cellSize = 20;
   const grid = turf.pointGrid(bbox, cellSize);
 
-  const pointsWithin = grid.features.filter(point =>
-    turf.booleanPointInPolygon(point, countryFeature)
-  );
+  let pointsWithin;
+  if(countryFeature.id == "RUS") {
+     pointsWithin = grid.features.filter(point =>
+      turf.booleanPointInPolygon(point, countryFeature)
+    );
+   
+  } else {
+     pointsWithin = grid.features.filter(point =>
+      turf.booleanPointInPolygon(point, countryFeature)
+
+    );
+  }
+
+  if(countryFeature.id == "JPN") {
+    // log(grid.features.filter(point =>
+    //   turf.booleanPointInPolygon(point, countryFeature)))
+  }
 
   return pointsWithin;
 }
@@ -72,15 +94,22 @@ async function generateMap(clusterData) {
   const minOpacity = 0.65; // minimum opacity value
 
   for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
-    const { countries } = clusterData[clusterIndex];
+    const countries  = clusterData[clusterIndex].countries;
     const color = colors[clusterIndex % colors.length];
 
-    for (const countryCode of countries) {
+    const isoCountries = mapCountriesToGeoJson(countries);  
+
+    
+
+    for (const countryCode of isoCountries) {
       const countryFeature = geojson.features.find(feature => feature.id === countryCode);
       if (!countryFeature) {
+
         console.warn(`Country with ISO code ${countryCode} not found`);
         continue;
       }
+
+     
 
       const pointsWithin = await generatePointsForCountry(countryFeature);
       const medals = totalMedals[countryCode] || 0;
@@ -88,6 +117,7 @@ async function generateMap(clusterData) {
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
 
       pointsWithin.forEach(point => {
+
         const [lng, lat] = point.geometry.coordinates;
         map.addPin({
           lat,

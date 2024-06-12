@@ -161,7 +161,7 @@ function readJsonFileSync(filepath, encoding = 'utf8') {
 // Fetch JSON data from URL
 function generateRadarCharts() {
     try {
-        const jsonData = readJsonFileSync('public/data.json');
+        const jsonData = readJsonFileSync('public/filtered_data.json');
 
         // Process the JSON data
         const radarChartData = prepareRadarChartData(jsonData);

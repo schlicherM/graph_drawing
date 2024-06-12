@@ -6,7 +6,7 @@ const { ClientRequest } = require('http');
 const countriesGeo = JSON.parse(fs.readFileSync('public/countries.geo.json', 'utf8'));
 
 // Load the data file
-const nocData = JSON.parse(fs.readFileSync('public/data.json', 'utf8'));
+const nocData = JSON.parse(fs.readFileSync('public/filtered_data.json', 'utf8'));
 
 // Extract country names and IDs from geojson
 const countryGeoData = countriesGeo.features.map(feature => ({
@@ -52,7 +52,7 @@ function mapCountriesToGeoJson(countryCodes) {
 
     for(let i in countryData) {
         for(let j in countryGeoData) {
-            if(countryData[i].id === j.id || countryData[i].name.toLowerCase() === countryGeoData[j].name.toLowerCase()) {
+            if(countryData[i].id === j.id || countryData[i].name === countryGeoData[j].name) {
                 array[i] = countryGeoData[j].id
             }
         } 
