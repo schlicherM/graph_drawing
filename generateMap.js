@@ -22,6 +22,32 @@ async function generatePointsForCountry(countryFeature) {
   return pointsWithin;
 }
 
+// Function to calculate total medals for each country
+function calculateTotalMedals(data) {
+  let totalMedals = {};
+  data.links.forEach(link => {
+    if (!totalMedals[link.target]) {
+      totalMedals[link.target] = 0;
+    }
+    totalMedals[link.target] += link.attr.length;
+  });
+  return totalMedals;
+}
+
+// Function to calculate opacity based on the number of medals
+function calculateOpacity(medals, maxMedals, minOpacity) {
+  return Math.max(minOpacity, (medals / maxMedals)+minOpacity);
+}
+
+// Function to convert a hex color to RGBA, it didnt worked with hex
+function hexToRgba(hex, opacity) {
+  let r = 0, g = 0, b = 0;
+  r = parseInt(hex[1] + hex[2], 16);
+  g = parseInt(hex[3] + hex[4], 16);
+  b = parseInt(hex[5] + hex[6], 16);
+  return `rgba(${r},${g},${b},${opacity})`;
+}
+
 // Create a dotted map with points for multiple countries
 async function generateMap(clusterData) {
   const geojson = fetchGeoJSON();
@@ -37,6 +63,14 @@ async function generateMap(clusterData) {
     '#64821a', '#1a6482', '#821a2d', '#2d823d' 
   ];
 
+  // load data.json and caculate medals
+  const jsonData = JSON.parse(fs.readFileSync('public/data.json', 'utf8'));
+  const totalMedals = calculateTotalMedals(jsonData);
+
+  // Find the maximum number of medals
+  const maxMedals = Math.max(...Object.values(totalMedals));
+  const minOpacity = 0.65; // minimum opacity value
+
   for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
     const { countries } = clusterData[clusterIndex];
     const color = colors[clusterIndex % colors.length];
@@ -49,13 +83,16 @@ async function generateMap(clusterData) {
       }
 
       const pointsWithin = await generatePointsForCountry(countryFeature);
+      const medals = totalMedals[countryCode] || 0;
+      const opacity = calculateOpacity(medals, maxMedals, minOpacity);
+      const rgbaColor = hexToRgba(color, opacity.toFixed(2));
 
       pointsWithin.forEach(point => {
         const [lng, lat] = point.geometry.coordinates;
         map.addPin({
           lat,
           lng,
-          svgOptions: { color, radius: 0.4 }
+          svgOptions: { color: rgbaColor, radius: 0.4 }
         });
       });
     }
