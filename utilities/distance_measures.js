@@ -1,4 +1,5 @@
-function cosineSimilarity(a, b) {
+function cosineDistance(a, b) {
+    //this function is slightly optimized for speed
     mag_a = 0;
     mag_b = 0;
     dot = a.reduce((s, e, i) => {
@@ -8,7 +9,7 @@ function cosineSimilarity(a, b) {
     }, 0);
     mag_a = Math.sqrt(mag_a);
     mag_b = Math.sqrt(mag_b);
-    return dot / (mag_a * mag_b);
+    return 1-(dot/(mag_a * mag_b));
 }
 
 function euclideanDistance(a, b) {
@@ -19,4 +20,4 @@ function manhattanDistance(a, b) {
     return a.reduce((s, e, i) => s + Math.abs(e.value - b[i].value), 0);
 }
 
-module.exports = {cosineSimilarity, euclideanDistance, manhattanDistance};
+module.exports = {cosineDistance, euclideanDistance, manhattanDistance};
