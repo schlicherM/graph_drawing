@@ -1,7 +1,7 @@
 const turf = require('@turf/turf');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
-const { readJsonFileSync } = require("./util")
+const { readJsonFileSync } = require("./utilities/util")
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {

@@ -16,3 +16,5 @@ function getConfig(key){
     }
     return value;
 }
+
+module.exports = {readJsonFileSync, getConfig};

@@ -3,7 +3,8 @@ const { generateMap } = require('./generateMap');
 const { mapCountriesToGeoJson } = require('./countryToNoc');
 const { log } = require('console');
 const { SourceTextModule } = require('vm');
-const { readJsonFileSync, getConfig } = require("./util")
+const { readJsonFileSync, getConfig } = require("./utilities/util");
+const { euclideanDistance, cosineSimilarity, manhattanDistance } = require("./utilities/distance_measures");
 
 
  /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
@@ -89,10 +90,12 @@ function prepareRadarChartData(data) {
 }
 
 function distanceFunction(a, b){
+    // https://arxiv.org/pdf/1708.04321
     id = getConfig("cl_distance_measure");
     id_map = {
-        "euclidean_distance": euclideanDistance,
-        "cosine_similarity": cosineSimilarity,
+        "euclidean": euclideanDistance,
+        "cos_sim": cosineSimilarity,
+        "manhattan": manhattanDistance,
         "test": (a,b) => 0.0
     };
     f = null;
@@ -105,20 +108,15 @@ function distanceFunction(a, b){
     return f(a, b);
 }
 
-function cosineSimilarity(a, b){
-    dot = (a, b) => a.map((_, i) => a[i] * b[i]).reduce((m, n) => m + n);
-    mag = (a) => Math.sqrt(a.map((_, i) => a[i] * a[i]).reduce((m, n) => m + n));
-    return dot(a, b)/(mag(a)*mag(b));
-}
-
-function euclideanDistance(a, b) {
-    return Math.sqrt(a.reduce((sum, value, index) => sum + Math.pow(value.value - b[index].value, 2), 0));
-}
-
 // K-means clustering with country names
 function kmeans(data, k, countryNames) {
     let centroids = data.slice(0, k).map((d, i) => ({ data: d, countries: [countryNames[i]] }));
     let clusters = Array.from({ length: k }, () => ({ data: [], countries: [] }));
+
+    // threshold for centroid updates, used to offset numerical inaccuracy
+    let epsilon = 0;
+    if(getConfig("cl_distance_measure") == "cos_sim") 
+        epsilon = 0.2;
 
     let change = true;
     while (change) {
@@ -151,7 +149,8 @@ function kmeans(data, k, countryNames) {
                 axis: cluster.data[0][i].axis,
                 value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
             }));
-            if (distanceFunction(newCentroid, centroids[index].data) > 0) {
+            if (distanceFunction(newCentroid, centroids[index].data) > epsilon) {
+                // console.log(distanceFunction(newCentroid, centroids[index].data)+" > "+epsilon);
                 centroids[index].data = newCentroid;
                 centroids[index].countries = cluster.countries.slice();
                 change = true;
