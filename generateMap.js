@@ -11,6 +11,7 @@ function fetchGeoJSON() {
   return JSON.parse(data);
 }
 const { readJsonFileSync } = require("./util")
+const { readJsonFileSync } = require("./utilities/util")
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
