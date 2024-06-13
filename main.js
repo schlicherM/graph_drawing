@@ -92,14 +92,15 @@ function distanceFunction(a, b){
     id = getConfig("cl_distance_measure");
     id_map = {
         "euclidean_distance": euclideanDistance,
-        "cosine_similarity": cosineSimilarity
+        "cosine_similarity": cosineSimilarity,
+        "test": (a,b) => 0.0
     };
     f = null;
     if(id in id_map){
         f = id_map[id];
     }
     else{
-        throw new Error("distance function id '"+id+"' is not implemented!");
+        throw new Error("Distance function '"+id+"' is not implemented.");
     }
     return f(a, b);
 }

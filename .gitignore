@@ -1,3 +1,8 @@
+# Node.js
 node_modules
 
-.vscode/launch.json
+# VSC
+.vscode/*
+
+# settings
+config/config.json

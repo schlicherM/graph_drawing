@@ -6,5 +6,13 @@ function readJsonFileSync(filepath, encoding = 'utf8') {
 }
 
 function getConfig(key){
-    return readJsonFileSync("./config/config.json")[key];
+    const config = readJsonFileSync("./config/config.json");
+    value = null;
+    if(key in config){
+        value = config[key];
+    }
+    else{
+        throw new Error("Config key '"+key+"' was not found in the config file.");
+    }
+    return value;
 }
