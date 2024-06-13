@@ -1,13 +1,7 @@
 const turf = require('@turf/turf');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
-
-// Function to fetch GeoJSON data from a local file
-function fetchGeoJSON() {
-  const filePath = './node_modules/dotted-map/src/countries.geo.json';
-  const data = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(data);
-}
+const { readJsonFileSync } = require("./util")
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
@@ -24,7 +18,7 @@ async function generatePointsForCountry(countryFeature) {
 
 // Create a dotted map with points for multiple countries
 async function generateMap(clusterData) {
-  const geojson = fetchGeoJSON();
+  const geojson = readJsonFileSync('./node_modules/dotted-map/src/countries.geo.json');
 
   const map = new DottedMap({
     height: 150,
