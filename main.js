@@ -81,6 +81,7 @@ function prepareRadarChartData(data) {
 }
 
 function generateClustering(){
+    clusterAverages = Object();
     try {
         const jsonData = readJsonFileSync('public/filtered_data.json');
 
@@ -99,32 +100,30 @@ function generateClustering(){
         const clusters = kmeans(dataForClustering, numClusters, countryNames);
 
         // Calculate average medals for each cluster
-        const clusterAverages = calculateClusterAverages(clusters);
+        clusterAverages = calculateClusterAverages(clusters);
+        for(cluster of clusterAverages)
+            console.log(cluster);
 
         clusterAverages.forEach((clusterAvg, clusterIndex) => {
             var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries);
             clusterAverages[clusterIndex].countries = nocToIso;
         });
     } catch (error) {
-        console.error('Error generating clustering: ', error);
+        console.error('Error while generating clustering: ', error);
     }
+    fs.writeFile('files/kmeans_clustering.json', JSON.stringify(clusterAverages), e => {
+        if (e) console.error('Error while saving clustering: ', e);
+    });
     return clusterAverages;
 }
 
-// Fetch JSON data from URL
-function generateRadarCharts() {
-    try {
-        // Calculate average medals for each cluster
-        const clusterAverages = generateClustering();
-        
-        generateMap(clusterAverages).then(() => {
-            console.log('Combined dotted map created for all clusters');
-        }).catch(err => {
-            console.error(err);
-        });
-    } catch (error) {
-        console.error('Error generating dotted map: ', error);
-    }
+function generateMapFromClustering(clusterAverages) {
+    generateMap(clusterAverages).then(() => {
+        console.log('Combined dotted map created for all clusters');
+    }).catch(err => {
+        console.error('Error generating dotted map: ', err);
+    });
 }
 
-generateRadarCharts();
+const clusters = generateClustering();
+generateMapFromClustering(clusters);
