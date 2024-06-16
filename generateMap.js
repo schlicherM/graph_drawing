@@ -79,10 +79,13 @@ async function generateMap(clusterData) {
     grid: 'diagonal'
   });
 
-  // add colors for clusters
+  // add colors schema for clusters
   const colors = [
-    '#2d1a82', '#1a2d82', '#1a823d', '#823d1a', '#821a64', 
-    '#64821a', '#1a6482', '#821a2d', '#2d823d' 
+    '#2d1a82', //first color 
+    '#1a2d82', //second color
+    '#1a823d', //third color
+    '#823d1a', //fourth color
+    '#821a64', //fitht color 
   ];
 
   // load data.json and caculate medals

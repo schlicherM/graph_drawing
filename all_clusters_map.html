@@ -153,12 +153,14 @@
 
                 const sortedData = sortData(radarChartData, categorieOrder);
                 
+
+                //first color code in the range must be the same as the color[x] as the color[x] from the generate map color scheme 
                 const colors = [
-                    d3.scale.ordinal().range(["#2d1a82","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#1a2d82","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#1a823d","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#823d1a","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#821a64","#CC333F","#00A0B0"]),
+                    d3.scale.ordinal().range(["#2d1a82","#CC333F","#00A0B0"]), //first color
+                    d3.scale.ordinal().range(["#1a2d82","#CC333F","#00A0B0"]), //second color
+                    d3.scale.ordinal().range(["#1a823d","#CC333F","#00A0B0"]), //third color
+                    d3.scale.ordinal().range(["#823d1a","#CC333F","#00A0B0"]), //fourth color
+                    d3.scale.ordinal().range(["#821a64","#CC333F","#00A0B0"]), //fitht color
                 ];
 
                 let cc = 0;
