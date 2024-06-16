@@ -153,6 +153,15 @@
 
                 const sortedData = sortData(radarChartData, categorieOrder);
                 
+                const colors = [
+                    d3.scale.ordinal().range(["#2d1a82","#CC333F","#00A0B0"]),
+                    d3.scale.ordinal().range(["#1a2d82","#CC333F","#00A0B0"]),
+                    d3.scale.ordinal().range(["#1a823d","#CC333F","#00A0B0"]),
+                    d3.scale.ordinal().range(["#823d1a","#CC333F","#00A0B0"]),
+                    d3.scale.ordinal().range(["#821a64","#CC333F","#00A0B0"]),
+                ];
+
+                let cc = 0;
                 for (let continent in sortedData) {
                     let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
 
@@ -162,9 +171,10 @@
                         margin: margin,
                         maxValue: 0.3,
                         levels: 5,
-                        roundStrokes: false,
-                        color: d3.scale.ordinal().range(colors),
+                        roundStrokes: true,
+                        color: colors[cc],
                     };
+                    cc++;
 
                     // Create a unique class for each radar chart
                     let chartClass = "radarChart-" + continent.replace(/\s+/g, '');
