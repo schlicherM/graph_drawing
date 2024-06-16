@@ -8,9 +8,12 @@
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "axios": "^1.7.2",
+    "canvas": "^2.11.2",
     "d3": "^7.9.0",
     "dotted-map": "^2.2.3",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "react": "^18.3.1",
+    "three": "^0.165.0"
   },
   "keywords": [],
   "author": "",
