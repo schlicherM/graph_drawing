@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map and Radar Charts</title>
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 25px;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            height: 80%;
+        }
+        #chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .chart {
+            margin: 2px; /* Weiter reduziert den Abstand zwischen den Charts */
+        }
+
+        .chart text {
+            fill: white; /* Setzt die Beschriftung der Charts auf Weiß */
+        }
+    </style>
+</head>
+<body>
+    <p>Different skill profiles for the Olympic Games</p>
+    <img src="files/map_clusters.svg" alt="">
+    <div id="chart-container"></div>
+
+    <script src="radarChart.js"></script>
+    <script>
+        /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
+        
+        // setup
+        var margin = {top: 20, right: 20, bottom: 20, left: 20},
+        width = Math.min(200, window.innerWidth / 5) - margin.left - margin.right, // Größere Breite
+        height = Math.min(200, window.innerHeight / 5 - margin.top - margin.bottom); // Größere Höhe
+        const colors = [
+            '#2d1a82', '#1a2d82', '#1a823d', '#823d1a', '#821a64', 
+            '#64821a', '#1a6482', '#821a2d', '#2d823d'
+        ];
+
+        // Function to sort the data according to the provided order
+        function sortData(cl_data, order) {
+            const orderMap = order.reduce((acc, axis, index) => {
+                acc[axis] = index;
+                return acc;
+            }, {});
+
+            const sortedData = {};
+            cl_idx = 0
+            for (const cluster of cl_data) {
+                cl_sorted_data = cluster["data"].sort((a, b) => {
+                    return orderMap[a.axis] - orderMap[b.axis];
+                });
+                sortedData["cluster-"+cl_idx] = {
+                    "data": cl_sorted_data,
+                    "countries": cluster["countries"]
+                }
+                cl_idx += 1;
+            }
+            return sortedData;
+        }
+
+        // Fetch JSON data from URL
+        fetch('files/kmeans_clustering.json')
+            .then(response => response.json())
+            .then(jsonData => {
+                const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
+
+                const sortedData = sortData(jsonData, categorieOrder);
+                
+                color_idx = 0;
+                for (let cluster in sortedData) {
+                    let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
+
+                    let radarChartOptions = {
+                        w: width,
+                        h: height,
+                        margin: margin,
+                        maxValue: 0.3,
+                        levels: 5,
+                        roundStrokes: false,
+                        color: colors[color_idx],
+                    };
+
+                    // Create a unique class for each radar chart
+                    let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
+                    chartContainer.append("div").attr("class", chartClass);
+                    RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+
+                    color_idx += 1;
+                }
+            })
+            .catch(error => console.error('Error loading JSON:', error));
+    </script>
+</body>
+</html>
