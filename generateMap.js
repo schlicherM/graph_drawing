@@ -2,14 +2,6 @@ const turf = require('@turf/turf');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
 const { mapCountriesToGeoJson } = require('./countryToNoc');
-
-// Function to fetch GeoJSON data from a local file
-function fetchGeoJSON() {
-  const filePath = './public/countries.geo.json';
-  const data = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(data);
-}
-const { readJsonFileSync } = require("./util")
 const { readJsonFileSync } = require("./utilities/util")
 
 // Generate a grid of points within the country boundary

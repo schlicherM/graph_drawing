@@ -9,3 +9,4 @@ config/config.json
 
 # generated files
 files/map_clusters.svg
+files/kmeans_clustering.json

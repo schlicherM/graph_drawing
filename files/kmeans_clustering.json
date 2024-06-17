@@ -3,99 +3,90 @@
         "data": [
             {
                 "axis": "shooting",
-                "value": 0.06056931562313421
+                "value": 0.07250753916264886
             },
             {
                 "axis": "fighting",
-                "value": 0.6416965919105553
+                "value": 0.6308753767347646
             },
             {
                 "axis": "cycling",
-                "value": 0.009462820749942282
+                "value": 0.01835777511571442
             },
             {
                 "axis": "swimming",
-                "value": 0.01873189349156619
+                "value": 0.029644909831566094
             },
             {
                 "axis": "gymnastics",
-                "value": 0.018405444493921848
+                "value": 0.018406186537406468
             },
             {
                 "axis": "athletics",
-                "value": 0.08700436238818256
+                "value": 0.058376324927788485
             },
             {
                 "axis": "equestrian",
-                "value": 0.0004099736664781242
+                "value": 0.010912164758318604
             },
             {
                 "axis": "boating",
-                "value": 0.025634554387597555
+                "value": 0.023624550756805935
             },
             {
                 "axis": "racquets",
-                "value": 0.02333094492796616
+                "value": 0.021910556790371107
             }
         ],
         "countries": [
             "GEO",
             "ROC",
-            "BOH",
-            "GUY",
             "SYR",
-            "LBN",
             "FJI",
             "IRI",
             "MNG",
             "SRB",
             "TJK",
-            "DZA",
-            "ARG",
             "SMR",
             "CIV",
             "TGA",
             "PAK",
             "TUN",
-            "YUG",
+            "KSA",
             "VEN",
             "AFG",
             "NER",
             "KGZ",
             "JOR",
             "CUB",
-            "BGR",
+            "IRL",
             "TKM",
             "SAM",
+            "RUS",
             "ARE",
-            "BMU",
             "CS-KM",
             "JPN",
+            "MEX",
             "MRI",
             "PRK",
             "MKD",
-            "IRQ",
-            "UAR",
             "PRI",
             "IND",
             "KOR",
             "GHA",
+            "FRA",
             "UZB",
             "TUR",
             "MDA",
             "PRY",
-            "MON",
-            "CMR",
             "MNE",
             "ARM",
             "EGY",
             "PHL",
-            "EST",
             "TPE",
             "AZE",
             "COL",
             "VNM",
-            "ZMB",
             "THA",
             "GAB",
             "KAZ",
@@ -106,52 +97,74 @@
         "data": [
             {
                 "axis": "shooting",
-                "value": 0.35398635043663734
+                "value": 0.1851355197083606
             },
             {
                 "axis": "fighting",
-                "value": 0.03358017858993367
+                "value": 0.1620124690864132
             },
             {
                 "axis": "cycling",
-                "value": 0.023211061790040063
+                "value": 0.046834788949993836
             },
             {
                 "axis": "swimming",
-                "value": 0.009561820748909945
+                "value": 0.0681803107892096
             },
             {
                 "axis": "gymnastics",
-                "value": 0.0027388935198682705
+                "value": 0.05102349726542561
             },
             {
                 "axis": "athletics",
-                "value": 0.05194243939153302
+                "value": 0.14019225785921996
             },
             {
                 "axis": "equestrian",
-                "value": 0.006409914219661724
+                "value": 0.012788577509276314
             },
             {
                 "axis": "boating",
-                "value": 0.507976763006786
+                "value": 0.305919840788779
             },
             {
                 "axis": "racquets",
-                "value": 0.010592578296629972
+                "value": 0.027912738043321856
             }
         ],
         "countries": [
-            "URY",
+            "AUT",
+            "SWE",
+            "LVA",
+            "DEU",
+            "BLR",
             "PER",
-            "CZE",
+            "ARG",
+            "ITA",
+            "TCH",
+            "ESP",
+            "CAN",
+            "HUN",
             "NOR",
             "IOA",
+            "HRV",
+            "BGR",
+            "ROU",
+            "UKR",
+            "POL",
             "SCG",
+            "EUN",
             "NZL",
-            "ISV",
-            "AHO",
+            "DNK",
+            "LTU",
+            "GBR",
+            "FIN",
+            "BRA",
+            "GRC",
+            "TCH",
             "KWT",
+            "EST",
+            "SVN",
             "CYP",
             "TGO",
             "SVK"
@@ -161,98 +174,19 @@
         "data": [
             {
                 "axis": "shooting",
-                "value": 0.07102842957317097
+                "value": 0.006666666666666667
             },
             {
                 "axis": "fighting",
-                "value": 0.23846461965375895
+                "value": 0.04731481481481482
             },
             {
                 "axis": "cycling",
-                "value": 0.06113766625200806
+                "value": 0.013333333333333332
             },
             {
                 "axis": "swimming",
-                "value": 0.10175587278234724
-            },
-            {
-                "axis": "gymnastics",
-                "value": 0.07264750914311434
-            },
-            {
-                "axis": "athletics",
-                "value": 0.20104830007497132
-            },
-            {
-                "axis": "equestrian",
-                "value": 0.0484188735598043
-            },
-            {
-                "axis": "boating",
-                "value": 0.17518178520261374
-            },
-            {
-                "axis": "racquets",
-                "value": 0.030316943758210972
-            }
-        ],
-        "countries": [
-            "AUT",
-            "CHL",
-            "SWE",
-            "LVA",
-            "URS",
-            "DEU",
-            "GDR",
-            "BLR",
-            "BEL",
-            "ITA",
-            "ESP",
-            "CAN",
-            "HUN",
-            "KSA",
-            "HRV",
-            "PRT",
-            "IRL",
-            "RUS",
-            "ROU",
-            "MEX",
-            "FRG",
-            "UKR",
-            "POL",
-            "USA",
-            "NLD",
-            "EUN",
-            "DNK",
-            "LTU",
-            "GBR",
-            "FIN",
-            "FRA",
-            "BRA",
-            "GRC",
-            "CHE",
-            "TCH",
-            "SVN",
-            "ZAF"
-        ]
-    },
-    {
-        "data": [
-            {
-                "axis": "shooting",
-                "value": 0.02258064516129032
-            },
-            {
-                "axis": "fighting",
-                "value": 0.05592464756038836
-            },
-            {
-                "axis": "cycling",
-                "value": 0.011127781945486371
-            },
-            {
-                "axis": "swimming",
-                "value": 0.0020161290322580645
+                "value": 0.0027777777777777775
             },
             {
                 "axis": "gymnastics",
@@ -260,7 +194,7 @@
             },
             {
                 "axis": "athletics",
-                "value": 0.9043185382360607
+                "value": 0.9232407407407408
             },
             {
                 "axis": "equestrian",
@@ -268,7 +202,7 @@
             },
             {
                 "axis": "boating",
-                "value": 0.004032258064516129
+                "value": 0.006666666666666667
             },
             {
                 "axis": "racquets",
@@ -277,30 +211,29 @@
         ],
         "countries": [
             "ERI",
-            "TZA",
             "KEN",
-            "LUX",
+            "DZA",
             "BWA",
             "BHS",
             "ETH",
+            "PRT",
             "LKA",
-            "WIF",
             "DOM",
+            "BMU",
             "NAM",
             "ISL",
             "ECU",
             "BAR",
             "SDN",
             "BFA",
-            "SEN",
-            "DJI",
             "JAM",
-            "HTI",
             "MAR",
+            "CMR",
             "MOZ",
             "BRN",
             "BDI",
             "PAN",
+            "ZMB",
             "NGA",
             "TTO",
             "UGA",
@@ -313,52 +246,100 @@
         "data": [
             {
                 "axis": "shooting",
-                "value": 0.021689962001871267
+                "value": 0
             },
             {
                 "axis": "fighting",
-                "value": 0.048249849289546835
+                "value": 0
             },
             {
                 "axis": "cycling",
-                "value": 0.04983341065571689
+                "value": 0.038461538461538464
             },
             {
                 "axis": "swimming",
-                "value": 0.5050812372882316
+                "value": 0.10096153846153846
             },
             {
                 "axis": "gymnastics",
-                "value": 0.016077429711645212
+                "value": 0
             },
             {
                 "axis": "athletics",
-                "value": 0.03215666658483294
+                "value": 0
             },
             {
                 "axis": "equestrian",
-                "value": 0.0027777777777777775
+                "value": 0
             },
             {
                 "axis": "boating",
-                "value": 0.03567827887298587
+                "value": 0
             },
             {
                 "axis": "racquets",
-                "value": 0.2884553878173916
+                "value": 0.8605769230769231
             }
         ],
         "countries": [
-            "ANZ",
+            "CHL",
             "SGP",
-            "HKG",
-            "AUS",
-            "CHN",
-            "CRI",
-            "SUR",
-            "ZWE",
             "MYS",
             "IDN"
+        ]
+    },
+    {
+        "data": [
+            {
+                "axis": "shooting",
+                "value": 0.029262012853916844
+            },
+            {
+                "axis": "fighting",
+                "value": 0.09045006624598713
+            },
+            {
+                "axis": "cycling",
+                "value": 0.18557007978410786
+            },
+            {
+                "axis": "swimming",
+                "value": 0.41359062043678385
+            },
+            {
+                "axis": "gymnastics",
+                "value": 0.025298469591778883
+            },
+            {
+                "axis": "athletics",
+                "value": 0.09693308207174643
+            },
+            {
+                "axis": "equestrian",
+                "value": 0.022041221938622763
+            },
+            {
+                "axis": "boating",
+                "value": 0.08288040641759085
+            },
+            {
+                "axis": "racquets",
+                "value": 0.053974040659465365
+            }
+        ],
+        "countries": [
+            "URY",
+            "BEL",
+            "HKG",
+            "AUS",
+            "USA",
+            "NLD",
+            "CHN",
+            "CRI",
+            "CHE",
+            "SUR",
+            "ZWE",
+            "ZAF"
         ]
     }
 ]
