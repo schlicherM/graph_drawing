@@ -3,49 +3,42 @@ const { generateMap } = require('./generateMap');
 const { mapCountriesToGeoJson } = require('./countryToNoc');
 const { log } = require('console');
 const { SourceTextModule } = require('vm');
+const { readJsonFileSync, } = require("./utilities/util");
+const { kmeans, calculateClusterAverages } = require("./kmeans");
 
+const margin = { top: 50, right: 50, bottom: 50, left: 50 },
+    width = 100,
+    height = width;
 
- /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
+const continents = {
+    "Oceania": ["ASA", "AUS", "COK", "FIJ", "FSM", "GUM", "KIR", "MHL", "NRU", "NZL", "PLW", "PNG", "SAM", "SOL", "TGA", "TUV", "VAN"],
+    "Europe": ["ALB", "AND", "ARM", "AUT", "AZE", "BLR", "BEL", "BIH", "BUL", "CRO", "CYP", "CZE", "DEN", "EST", "FIN", "FRA", "GEO", "GER", "GBR", "GRE", "HUN", "ISL", "IRL", "ISR", "ITA", "KOS", "LAT", "LIE", "LTU", "LUX", "MLT", "MDA", "MON", "MNE", "NED", "MKD", "NOR", "POL", "POR", "ROU", "RUS", "SMR", "SRB", "SVK", "SLO", "ESP", "SWE", "SUI", "TUR", "UKR"],
+    "America": ["ANT", "ARG", "ARU", "BAH", "BAR", "BIZ", "BER", "BOL", "BRA", "IVB", "CAN", "CAY", "CHI", "COL", "CRC", "CUB", "DMA", "DOM", "ECU", "ESA", "GRN", "GUA", "GUY", "HAI", "HON", "JAM", "MEX", "NCA", "PAN", "PAR", "PER", "PUR", "SKN", "LCA", "VIN", "SUR", "TTO", "USA", "URU", "VEN", "ISV"],
+    "Africa": ["ALG", "EGY", "LBA", "MAR", "SUD", "TUN", "BEN", "BUR", "CPV", "GAM", "GHA", "GUI", "GBS", "CIV", "LBR", "MLI", "MTN", "NIG", "NGR", "SEN", "SLE", "TOG", "CMR", "CAF", "CHA", "CGO", "COD", "GEQ", "GAB", "STP", "BDI", "DJI", "ERI", "ETH", "KEN", "RWA", "SEY", "SOM", "SSD", "TAN", "UGA", "ANG", "BOT", "COM", "SWZ", "LES", "MAD", "MAW", "MRI", "MOZ", "NAM", "RSA", "ZAM", "ZIM"],
+    "Asia": ["BRN", "IRI", "IRQ", "JOR", "KUW", "LBN", "OMA", "PLE", "QAT", "KSA", "SYR", "UAE", "YEM", "AFG", "KAZ", "KGZ", "TJK", "TKM", "UZB", "BAN", "BHU", "IND", "MDV", "NEP", "PAK", "SRI", "CHN", "HKG", "MAC", "JPN", "PRK", "KOR", "TPE", "MGL", "BRU", "CAM", "INA", "LAO", "MAS", "MYA", "PHI", "SGP", "THA", "TLS", "VIE"]
+};
 
-        ////////////////////////////////////////////////////////////// 
-        //////////////////////// Set-Up ////////////////////////////// 
-        ////////////////////////////////////////////////////////////// 
-        var margin = {top: 50, right: 50, bottom: 50, left: 50},
-            width = 100,
-            height = width;
-
-        ////////////////////////////////////////////////////////////// 
-        /////////////////////// Fetch Data ///////////////////////////
-        //////////////////////////////////////////////////////////////
-        var continents = {
-            "Oceania" : ["ASA", "AUS", "COK", "FIJ", "FSM", "GUM", "KIR", "MHL", "NRU", "NZL", "PLW", "PNG", "SAM", "SOL", "TGA", "TUV", "VAN"],
-            "Europe" : ["ALB", "AND", "ARM", "AUT", "AZE", "BLR", "BEL", "BIH", "BUL", "CRO", "CYP", "CZE", "DEN", "EST", "FIN", "FRA", "GEO", "GER","GBR", "GRE", "HUN", "ISL", "IRL", "ISR", "ITA", "KOS", "LAT", "LIE", "LTU", "LUX", "MLT", "MDA", "MON", "MNE", "NED", "MKD", "NOR", "POL", "POR", "ROU", "RUS", "SMR", "SRB", "SVK","SLO", "ESP", "SWE", "SUI", "TUR", "UKR"],
-            "America" : ["ANT", "ARG", "ARU", "BAH", "BAR", "BIZ", "BER", "BOL", "BRA", "IVB", "CAN", "CAY", "CHI", "COL", "CRC", "CUB", "DMA", "DOM", "ECU", "ESA", "GRN", "GUA", "GUY", "HAI", "HON", "JAM", "MEX", "NCA", "PAN", "PAR", "PER", "PUR", "SKN", "LCA", "VIN", "SUR", "TTO", "USA", "URU", "VEN", "ISV"],
-            "Africa" : ["ALG", "EGY", "LBA", "MAR", "SUD", "TUN", "BEN", "BUR", "CPV", "GAM", "GHA", "GUI", "GBS", "CIV", "LBR", "MLI", "MTN", "NIG", "NGR", "SEN", "SLE", "TOG", "CMR", "CAF", "CHA", "CGO", "COD", "GEQ", "GAB", "STP", "BDI", "DJI", "ERI", "ETH", "KEN", "RWA", "SEY", "SOM", "SSD", "TAN", "UGA", "ANG", "BOT", "COM", "SWZ", "LES", "MAD", "MAW", "MRI", "MOZ", "NAM", "RSA", "ZAM", "ZIM"],
-            "Asia" : ["BRN", "IRI", "IRQ", "JOR", "KUW", "LBN", "OMA", "PLE", "QAT", "KSA", "SYR", "UAE", "YEM", "AFG", "KAZ", "KGZ", "TJK", "TKM", "UZB", "BAN", "BHU", "IND", "MDV", "NEP", "PAK", "SRI", "CHN", "HKG", "MAC", "JPN", "PRK", "KOR", "TPE", "MGL", "BRU", "CAM", "INA", "LAO", "MAS", "MYA", "PHI", "SGP", "THA", "TLS", "VIE"]
-        };
-
-        // Calculate total medals for each category across all countries
-        function calculateTotalMedals(jsonData) {
-            let totalMedals = {};
-            jsonData.links.forEach(link => {
-                let category = link.source;  // Use link.source to get the category
-                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
-                    link.attr.forEach(attr => {
-                        if (!totalMedals[category]) {
-                            totalMedals[category] = 0;
-                        }
-                        totalMedals[category]++;
-                    });
+// Calculate total medals for each category across all countries
+function calculateTotalMedals(jsonData) {
+    let totalMedals = {};
+    jsonData.links.forEach(link => {
+        let category = link.source;  // Use link.source to get the category
+        if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
+            link.attr.forEach(attr => {
+                if (!totalMedals[category]) {
+                    totalMedals[category] = 0;
                 }
+                totalMedals[category]++;
             });
-            return totalMedals;
         }
+    });
+    return totalMedals;
+}
 
-        // Filter links by country
-        function filterLinksByCountry(links, country) {
-            return links.filter(link => link.target === country);
-        }
+// Filter links by country
+function filterLinksByCountry(links, country) {
+    return links.filter(link => link.target === country);
+}
 
         // Calculate medals for each category by country
 function calculateMedalsByCategory(filteredLinks, categories) {
@@ -87,79 +80,8 @@ function prepareRadarChartData(data) {
     return radarData;
 }
 
-// Euclidean distance function
-function euclideanDistance(a, b) {
-    return Math.sqrt(a.reduce((sum, value, index) => sum + Math.pow(value.value - b[index].value, 2), 0));
-}
-
-// K-means clustering with country names
-function kmeans(data, k, countryNames) {
-    let centroids = data.slice(0, k).map((d, i) => ({ data: d, countries: [countryNames[i]] }));
-    let clusters = Array.from({ length: k }, () => ({ data: [], countries: [] }));
-
-    let change = true;
-    while (change) {
-        change = false;
-
-        // Assign points to clusters
-        clusters.forEach(cluster => {
-            cluster.data.length = 0;
-            cluster.countries.length = 0;
-        });
-
-        data.forEach((point, idx) => {
-            let minDistance = Infinity;
-            let clusterIndex = 0;
-            centroids.forEach((centroid, index) => {
-                let distance = euclideanDistance(point, centroid.data);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    clusterIndex = index;
-                }
-            });
-            clusters[clusterIndex].data.push(point);
-            clusters[clusterIndex].countries.push(countryNames[idx]);
-        });
-
-        // Update centroids
-        clusters.forEach((cluster, index) => {
-            if (cluster.data.length === 0) return;
-            let newCentroid = cluster.data[0].map((_, i) => ({
-                axis: cluster.data[0][i].axis,
-                value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
-            }));
-            if (euclideanDistance(newCentroid, centroids[index].data) > 0) {
-                centroids[index].data = newCentroid;
-                centroids[index].countries = cluster.countries.slice();
-                change = true;
-            }
-        });
-    }
-
-    return clusters;
-}
-
-// Calculate average medals for each cluster
-function calculateClusterAverages(clusters) {
-    return clusters.map(cluster => {
-        if (cluster.data.length === 0) return { data: [], countries: cluster.countries };
-        let avgData = cluster.data[0].map((_, i) => ({
-            axis: cluster.data[0][i].axis,
-            value: cluster.data.reduce((sum, point) => sum + point[i].value, 0) / cluster.data.length
-        }));
-        return { data: avgData, countries: cluster.countries };
-    });
-}
-
-// Function to read JSON file
-function readJsonFileSync(filepath, encoding = 'utf8') {
-    const file = fs.readFileSync(filepath, encoding);
-    return JSON.parse(file);
-}
-
-
-// Fetch JSON data from URL
-function generateRadarCharts() {
+function generateClustering(){
+    clusterAverages = Object();
     try {
         const jsonData = readJsonFileSync('public/filtered_data.json');
 
@@ -178,25 +100,30 @@ function generateRadarCharts() {
         const clusters = kmeans(dataForClustering, numClusters, countryNames);
 
         // Calculate average medals for each cluster
-        const clusterAverages = calculateClusterAverages(clusters);
-    
+        clusterAverages = calculateClusterAverages(clusters);
+        for(cluster of clusterAverages)
+            console.log(cluster);
 
         clusterAverages.forEach((clusterAvg, clusterIndex) => {
             var nocToIso = mapCountriesToGeoJson(clusterAverages[clusterIndex].countries);
             clusterAverages[clusterIndex].countries = nocToIso;
         });
-        
-        generateMap(clusterAverages).then(() => {
-            console.log('Combined dotted map created for all clusters');
-        }).catch(err => {
-            console.error(err);
-        });
-
-        
-
     } catch (error) {
-        console.error('Error generating radar charts:', error);
+        console.error('Error while generating clustering: ', error);
     }
+    fs.writeFile('files/kmeans_clustering.json', JSON.stringify(clusterAverages), e => {
+        if (e) console.error('Error while saving clustering: ', e);
+    });
+    return clusterAverages;
 }
 
-generateRadarCharts();
+function generateMapFromClustering(clusterAverages) {
+    generateMap(clusterAverages).then(() => {
+        console.log('Combined dotted map created for all clusters');
+    }).catch(err => {
+        console.error('Error generating dotted map: ', err);
+    });
+}
+
+const clusters = generateClustering();
+generateMapFromClustering(clusters);

@@ -157,7 +157,7 @@ function RadarChart(id, data, options) {
 		.append("path")
 		.attr("class", "radarArea")
 		.attr("d", function(d,i) { return radarLine(d); })
-		.style("fill", function(d,i) { return cfg.color(i); })
+		.style("fill", function(d,i) { return cfg.color; })
 		.style("fill-opacity", cfg.opacityArea)
 		.on('mouseover', function (d,i){
 			//Dim all blobs
@@ -181,7 +181,7 @@ function RadarChart(id, data, options) {
 		.attr("class", "radarStroke")
 		.attr("d", function(d,i) { return radarLine(d); })
 		.style("stroke-width", cfg.strokeWidth + "px")
-		.style("stroke", function(d,i) { return cfg.color(i); })
+		.style("stroke", function(d,i) { return cfg.color; })
 		.style("fill", "none")
 		.style("filter" , "url(#glow)");		
 	
@@ -193,7 +193,7 @@ function RadarChart(id, data, options) {
 		.attr("r", cfg.dotRadius)
 		.attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
 		.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-		.style("fill", function(d,i,j) { return cfg.color(j); })
+		.style("fill", function(d,i,j) { return cfg.color; })
 		.style("fill-opacity", 0.8);
 
 	/////////////////////////////////////////////////////////
