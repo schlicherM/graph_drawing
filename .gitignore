@@ -5,7 +5,7 @@ node_modules
 .vscode/*
 
 # settings
-config/config.json
+# config/config.json
 
 # generated files
 files/map_clusters.svg

@@ -50,119 +50,47 @@
         var margin = {top: 20, right: 20, bottom: 20, left: 20},
         width = Math.min(200, window.innerWidth / 5) - margin.left - margin.right, // Größere Breite
         height = Math.min(200, window.innerHeight / 5 - margin.top - margin.bottom); // Größere Höhe
-        const colors = [
-            '#2d1a82', '#1a2d82', '#1a823d', '#823d1a', '#821a64', 
-            '#64821a', '#1a6482', '#821a2d', '#2d823d'
-        ];
 
-
-        var continents = {
-            "Oceania" : ["ASA", "AUS", "COK", "FIJ", "FSM", "GUM", "KIR", "MHL", "NRU", "NZL", "PLW", "PNG", "SAM", "SOL", "TGA", "TUV", "VAN"],
-            "Europe" : ["ALB", "AND", "ARM", "AUT", "AZE", "BLR", "BEL", "BIH", "BUL", "CRO", "CYP", "CZE", "DEN", "EST", "FIN", "FRA", "GEO", "GER","GBR", "GRE", "HUN", "ISL", "IRL", "ISR", "ITA", "KOS", "LAT", "LIE", "LTU", "LUX", "MLT", "MDA", "MON", "MNE", "NED", "MKD", "NOR", "POL", "POR", "ROU", "RUS", "SMR", "SRB", "SVK","SLO", "ESP", "SWE", "SUI", "TUR", "UKR"],
-            "America" : ["ANT", "ARG", "ARU", "BAH", "BAR", "BIZ", "BER", "BOL", "BRA", "IVB", "CAN", "CAY", "CHI", "COL", "CRC", "CUB", "DMA", "DOM", "ECU", "ESA", "GRN", "GUA", "GUY", "HAI", "HON", "JAM", "MEX", "NCA", "PAN", "PAR", "PER", "PUR", "SKN", "LCA", "VIN", "SUR", "TTO", "USA", "URU", "VEN", "ISV"],
-            "Africa" : ["ALG", "EGY", "LBA", "MAR", "SUD", "TUN", "BEN", "BUR", "CPV", "GAM", "GHA", "GUI", "GBS", "CIV", "LBR", "MLI", "MTN", "NIG", "NGR", "SEN", "SLE", "TOG", "CMR", "CAF", "CHA", "CGO", "COD", "GEQ", "GAB", "STP", "BDI", "DJI", "ERI", "ETH", "KEN", "RWA", "SEY", "SOM", "SSD", "TAN", "UGA", "ANG", "BOT", "COM", "SWZ", "LES", "MAD", "MAW", "MRI", "MOZ", "NAM", "RSA", "ZAM", "ZIM"],
-            "Asia" : ["BRN", "IRI", "IRQ", "JOR", "KUW", "LBN", "OMA", "PLE", "QAT", "KSA", "SYR", "UAE", "YEM", "AFG", "KAZ", "KGZ", "TJK", "TKM", "UZB", "BAN", "BHU", "IND", "MDV", "NEP", "PAK", "SRI", "CHN", "HKG", "MAC", "JPN", "PRK", "KOR", "TPE", "MGL", "BRU", "CAM", "INA", "LAO", "MAS", "MYA", "PHI", "SGP", "THA", "TLS", "VIE"]
-        };
-
-        // Calculate total medals for each category across all continents
-        function calculateTotalMedals(jsonData) {
-            let totalMedals = {};
-            jsonData.links.forEach(link => {
-                let category = link.source;  // Use link.source to get the category
-                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
-                    link.attr.forEach(attr => {
-                        if (!totalMedals[category]) {
-                            totalMedals[category] = 0;
-                        }
-                        totalMedals[category]++;
-                    });
-                }
-            });
-            return totalMedals;
-        }
-
-        // Filter countries by continent
-        function filterCountriesByContinent(links, continentCountries) {
-            return links.filter(link => continentCountries.includes(link.target));
-        }
-
-        // Calculate medals for each category
-        function calculateMedalsByCategory(filteredLinks, totalMedals, categories) {
-            let categoryTotals = {};
-
-            filteredLinks.forEach(link => {
-                let category = link.source;  // Use link.source to get the category
-                if (category !== "other" && category !== "teams") {  // Exclude "other" and "teams"
-                    if (!categoryTotals[category]) {
-                        categoryTotals[category] = 0;
-                    }
-                    link.attr.forEach(attr => {
-                        categoryTotals[category]++;
-                    });
-                }
-            });
-
-            return categories.map(category => ({
-                axis: category,
-                value: (categoryTotals[category] / totalMedals[category]) || 0
-            }));
-        }
-
-        // Prepare data for radar chart
-        function prepareRadarChartData(data, continents) {
-            const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
-            let radarData = {};
-            const totalMedals = calculateTotalMedals(data);
-
-            for (let continent in continents) {
-                let continentCountries = continents[continent];
-                let filteredLinks = filterCountriesByContinent(data.links, continentCountries);
-                let continentData = calculateMedalsByCategory(filteredLinks, totalMedals, categories);
-                radarData[continent] = continentData;
-            }
-
-            return radarData;
-        }
+        colors = null;
+        fetch('./config/config.json')
+            .then(response => response.json())
+            .then(config => {
+                colors = config["map_color_sequence"];
+            })
+            .catch(error => console.error('Error loading ./config/config.json:', error));
 
         // Function to sort the data according to the provided order
-        function sortData(data, order) {
+        function sortData(cl_data, order) {
             const orderMap = order.reduce((acc, axis, index) => {
                 acc[axis] = index;
                 return acc;
             }, {});
 
             const sortedData = {};
-
-            for (const region in data) {
-                sortedData[region] = data[region].slice().sort((a, b) => {
+            cl_idx = 0
+            for (const cluster of cl_data) {
+                cl_sorted_data = cluster["data"].sort((a, b) => {
                     return orderMap[a.axis] - orderMap[b.axis];
                 });
+                sortedData["cluster-"+cl_idx] = {
+                    "data": cl_sorted_data,
+                    "countries": cluster["countries"]
+                }
+                cl_idx += 1;
             }
-
             return sortedData;
         }
 
         // Fetch JSON data from URL
-        fetch('public/filtered_data.json')
+        fetch('files/kmeans_clustering.json')
             .then(response => response.json())
             .then(jsonData => {
-                // Process the JSON data
-                const radarChartData = prepareRadarChartData(jsonData, continents);
-
                 const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
 
-                const sortedData = sortData(radarChartData, categorieOrder);
+                const sortedData = sortData(jsonData, categorieOrder);
                 
-                const colors = [
-                    d3.scale.ordinal().range(["#2d1a82","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#1a2d82","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#1a823d","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#823d1a","#CC333F","#00A0B0"]),
-                    d3.scale.ordinal().range(["#821a64","#CC333F","#00A0B0"]),
-                ];
-
-                let cc = 0;
-                for (let continent in sortedData) {
+                color_idx = 0;
+                for (let cluster in sortedData) {
                     let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
 
                     let radarChartOptions = {
@@ -171,15 +99,16 @@
                         margin: margin,
                         maxValue: 0.3,
                         levels: 5,
-                        roundStrokes: true,
-                        color: colors[cc],
+                        roundStrokes: false,
+                        color: colors[color_idx % colors.length],
                     };
-                    cc++;
 
                     // Create a unique class for each radar chart
-                    let chartClass = "radarChart-" + continent.replace(/\s+/g, '');
+                    let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
                     chartContainer.append("div").attr("class", chartClass);
-                    RadarChart("." + chartClass, [sortedData[continent]], radarChartOptions);
+                    RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+
+                    color_idx += 1;
                 }
             })
             .catch(error => console.error('Error loading JSON:', error));

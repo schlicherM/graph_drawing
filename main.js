@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { generateMap } = require('./generateMap');
 const { mapCountriesToGeoJson } = require('./countryToNoc');
-const { readJsonFileSync, } = require("./utilities/util");
+const { readJsonFileSync, getConfig, } = require("./utilities/util");
 const { kmeans, calculateClusterAverages } = require("./kmeans");
 
 // Filter links by country
@@ -63,7 +63,7 @@ function generateClustering(){
         const countryNames = Object.keys(radarChartData);
 
         // Number of clusters (adjust as needed)
-        const numClusters = 5;
+        const numClusters = getConfig("cl_num_clusters");
 
         // Perform k-means clustering
         const clusters = kmeans(dataForClustering, numClusters, countryNames);

@@ -2,7 +2,7 @@ const turf = require('@turf/turf');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
 const { mapCountriesToGeoJson } = require('./countryToNoc');
-const { readJsonFileSync } = require("./utilities/util")
+const { readJsonFileSync, getConfig } = require("./utilities/util")
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
@@ -81,9 +81,7 @@ async function generateMap(clusterData) {
   });
 
   // add colors for clusters
-  const colors = [
-    '#2d1a82', '#1a2d82', '#1a823d', '#823d1a', '#821a64'
-  ];
+  const colors = getConfig("map_color_sequence");
 
   // load data.json and calculate medals
   const jsonData = JSON.parse(fs.readFileSync('public/data.json', 'utf8'));
@@ -91,7 +89,7 @@ async function generateMap(clusterData) {
 
   // Find the maximum number of medals for each cluster
   const maxMedalsPerCluster = calculateMaxMedals(clusterData, totalMedals);
-  const minOpacity = 0.10; // minimum opacity value
+  const minOpacity = getConfig("map_min_opacity");; // minimum opacity value
 
   for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
     const countries = clusterData[clusterIndex].countries;
