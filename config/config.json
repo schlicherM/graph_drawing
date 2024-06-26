@@ -1,0 +1,12 @@
+{
+    "cl_num_clusters": 5,
+    "cl_distance_measure": "cosine",
+    "map_color_sequence": [
+        "#2d1a82",
+        "#dd0000",
+        "#1a823d",
+        "#823d1a",
+        "#821a64"
+    ],
+    "map_min_opacity": 0.45
+}

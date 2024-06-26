@@ -1,3 +1,12 @@
+# Node.js
 node_modules
 
-.vscode/launch.json
+# VSC
+.vscode/*
+
+# settings
+# config/config.json
+
+# generated files
+files/map_clusters.svg
+files/kmeans_clustering.json
