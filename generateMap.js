@@ -73,7 +73,7 @@ function hexToRgba(hex, opacity) {
 
 // Create a dotted map with points for multiple countries
 async function generateMap(clusterData) {
-  const geojson = readJsonFileSync('./node_modules/dotted-map/src/countries.geo.json');
+  const geojson = readJsonFileSync('./public/countries.geo.json');
 
   const map = new DottedMap({
     height: 150,

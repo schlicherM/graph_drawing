@@ -1,0 +1,22 @@
+<svg id="Gruppe_1" data-name="Gruppe 1" xmlns="http://www.w3.org/2000/svg" width="1323" height="1142" viewBox="0 0 1323 1142">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-width: 56.53px;
+      }
+
+      .cls-1, .cls-2 {
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <circle cx="1165" cy="131" r="131"/>
+  <path id="Form_1" data-name="Form 1" class="cls-1" d="M234.988,156H427.012"/>
+  <path id="Form_1_Kopie" data-name="Form 1 Kopie" class="cls-1" d="M29.978,298H401.023"/>
+  <path id="Form_1_Kopie_2" data-name="Form 1 Kopie 2" class="cls-1" d="M235.005,440H451"/>
+  <path id="Form_2" data-name="Form 2" class="cls-2" d="M585,196s-69.409,49.591-19,100,102,0,102,0l106-99,84,81L667,470s-106.65,80.283-6,151L870,835,609,862s-54,2.818-54,70,66,59,66,59l391-36s70-11.872,70-42c0,0,2.82-10.747-3-35-3.53-14.717-19.92-36.918-33-50L840,612,949,508l2,85s1.241,54.066,59,57l275-20s38-.2,38-65-58-58-58-58l-177,8V360s3.41-32.588-74-110S816,49,816,49s-45.92-31.08-85,8S585,196,585,196Z"/>
+  <path id="Form_3" data-name="Form 3" class="cls-2" d="M571,570s-11.091,32.978,77,104L201,1127s-53.109,38.86-90-9-2-84-2-84Z"/>
+</svg>

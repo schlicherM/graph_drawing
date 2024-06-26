@@ -35,6 +35,11 @@
         .chart text {
             fill: white; /* Setzt die Beschriftung der Charts auf Weiß */
         }
+
+        .legend {
+            filter: invert(95%) sepia(95%) saturate(18%) hue-rotate(292deg) brightness(105%) contrast(106%); /*Macht die SVG's*/
+        }
+
     </style>
 </head>
 <body>
@@ -47,9 +52,9 @@
         /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
         
         // setup
-        var margin = {top: 20, right: 20, bottom: 20, left: 20},
-        width = Math.min(200, window.innerWidth / 5) - margin.left - margin.right, // Größere Breite
-        height = Math.min(200, window.innerHeight / 5 - margin.top - margin.bottom); // Größere Höhe
+        var margin = {top: 50, right: 30, bottom: 50, left: 30},
+        width = Math.min(200, window.innerWidth / 4 - margin.left - margin.right), // Größere Breite
+        height = Math.min(200, window.innerHeight / 4 - margin.top - margin.bottom); // Größere Höhe
 
         colors = null;
         fetch('./config/config.json')
