@@ -7,9 +7,9 @@ function RadarChart(id, data, options) {
         maxValue: 0,             //What is the value that the biggest circle will represent
         labelFactor: 1.5,     //How much farther than the radius of the outer circle should the labels be placed
         wrapWidth: 60,         //The number of pixels after which a label needs to be given a new line
-        opacityArea: 0.35,     //The opacity of the area of the blob
+        opacityArea: 0.5,     //The opacity of the area of the blob
         dotRadius: 4,             //The size of the colored circles of each blog
-        opacityCircles: 0.1,     //The opacity of the circles of each blob
+        opacityCircles: 0.2,     //The opacity of the circles of each blob
         strokeWidth: 2,         //The width of the stroke around each blob
         roundStrokes: true,    //If true the area and stroke will follow a round path (cardinal-closed)
         color: d3.scale.category10()    //Color function
@@ -41,7 +41,7 @@ function RadarChart(id, data, options) {
     /////////////////////////////////////////////////////////
 
     //Adds the Color lables on the bottom
-    d3.select(id).style("border-bottom", function(d){return "solid 6px" + cfg.color }).style("border-radius","20px");
+    d3.select(id).style("border-bottom", function(d){return "solid 6px" + cfg.color }).style("border-radius","4px");
 
     //Remove whatever chart with the same id/class was present before
     d3.select(id).select("svg").remove();
@@ -80,7 +80,7 @@ function RadarChart(id, data, options) {
         .append("circle")
         .attr("class", "gridCircle")
         .attr("r", function(d, i){return radius/cfg.levels*d;})
-        .style("fill", "#CDCDCD")
+        .style("fill", function(d) {return cfg.color}) //jump
         .style("stroke", "#CDCDCD")
         .style("fill-opacity", cfg.opacityCircles)
         .style("filter" , "url(#glow)");
@@ -153,7 +153,7 @@ function RadarChart(id, data, options) {
         .attr("class", "radarArea")
         .attr("d", function(d,i) { return radarLine(d); })
         .style("fill", function(d,i) { return cfg.color; })
-        .style("fill-opacity", cfg.opacityArea)
+        .style("fill-opacity", 0.7)
         .on('mouseover', function (d,i){
             //Dim all blobs
             d3.selectAll(".radarArea")
@@ -168,7 +168,7 @@ function RadarChart(id, data, options) {
             //Bring back all blobs
             d3.selectAll(".radarArea")
                 .transition().duration(200)
-                .style("fill-opacity", cfg.opacityArea);
+                .style("fill-opacity",0.7);
         });
         
     //Create the outlines    
@@ -189,7 +189,7 @@ function RadarChart(id, data, options) {
         .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
         .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
         .style("fill", function(d,i,j) { return cfg.color; })
-        .style("fill-opacity", 0.8);
+        .style("fill-opacity", 1);
 
     /////////////////////////////////////////////////////////
     //////// Append invisible circles for tooltip ///////////
@@ -264,5 +264,87 @@ function RadarChart(id, data, options) {
         }
       });
     }//wrap    
+    function hexToRgb(hex) {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(char => char + char).join('');
+        }
+        const bigint = parseInt(hex, 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return [r, g, b];
+    }
     
+    function rgbToHex(r, g, b) {
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+    
+    function rgbToHsl(r, g, b) {
+        r /= 255;
+        g /= 255;
+        b /= 255;
+    
+        let max = Math.max(r, g, b);
+        let min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+    
+        if (max === min) {
+            h = s = 0; // achromatic
+        } else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+    
+        return [h, s, l];
+    }
+    
+    function hslToRgb(h, s, l) {
+        let r, g, b;
+    
+        if (s === 0) {
+            r = g = b = l; // achromatic
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 3) return q;
+                if (t < 1 / 2) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+    
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+    
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+    
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+    
+    function brightenHexColor(hex, amount = 0.1) {
+        // Convert hex to RGB
+        let [r, g, b] = hexToRgb(hex);
+    
+        // Convert RGB to HSL
+        let [h, s, l] = rgbToHsl(r, g, b);
+    
+        // Increase the lightness
+        l = Math.min(1, l + amount);
+    
+        // Convert HSL back to RGB
+        [r, g, b] = hslToRgb(h, s, l);
+    
+        // Convert RGB back to hex
+        return rgbToHex(r, g, b);
+    }
 }//RadarChart
