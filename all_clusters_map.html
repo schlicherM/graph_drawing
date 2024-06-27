@@ -10,8 +10,12 @@
     <!-- D3.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
     <style>
+        #title {
+            margin-top: 3rem;
+            font-size: 50px;
+        }
         body {
-            background-color: black;
+            background-color: #1f1f1f;
             color: white;
             font-family: 'Open Sans', sans-serif;
             font-size: 25px;
@@ -29,7 +33,7 @@
 
         #legend-containter {
             position: relative;
-            margin: -21% 0px 0px 2%;
+            margin: -21% 0px 0px 5%;
             border: 3px solid #fff;
             z-index: 20;
             height: 240px;
@@ -42,7 +46,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            margin-top: 20px;
+            margin: 20px 0 1rem 0;
         }
 
         .chart {
@@ -84,7 +88,7 @@
     </style>
 </head>
 <body>
-    <p>Different skill profiles for the Olympic Games</p>
+   
     <div id="map-container">
         <img src="files/map_clusters.svg" alt="">
     </div>
@@ -136,7 +140,7 @@
         </div>
     </div>
     <div id="chart-container"></div>
-
+    <span id="title">Different skill profiles for the Olympic Games</span>
     <script src="radarChart.js"></script>
     <script>
         /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
