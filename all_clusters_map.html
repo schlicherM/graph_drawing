@@ -139,78 +139,81 @@
             <span class="legend-icon-label" >Swimming</span>
         </div>
     </div>
+    <img id="map_clusters", src="files/map_clusters.svg", style="display: none;">
     <div id="chart-container"></div>
     <span id="title">Different skill profiles for the Olympic Games</span>
     <script src="radarChart.js"></script>
     <script>
         /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
-        
-        // setup
-        var margin = {top: 50, right: 30, bottom: 50, left: 30},
-        width = Math.min(200, window.innerWidth / 4 - margin.left - margin.right), // Größere Breite
-        height = Math.min(200, window.innerHeight / 4 - margin.top - margin.bottom); // Größere Höhe
-
-        colors = null;
         fetch('./config/config.json')
             .then(response => response.json())
             .then(config => {
+                // get externally defined settings from config.json
                 colors = config["map_color_sequence"];
+                num_charts = config["cl_num_clusters"];
+
+                // setup chart container
+                var chart_container_margin = {top: 20, right: 20, bottom: 20, left: 20};
+                var chart_container_width = (window.innerWidth - chart_container_margin.left - chart_container_margin.right);
+                var chart_container_height = (window.innerHeight - chart_container_margin.top - chart_container_margin.bottom);
+
+                // Function to sort the data according to the provided order
+                function sortData(cl_data, order) {
+                    const orderMap = order.reduce((acc, axis, index) => {
+                        acc[axis] = index;
+                        return acc;
+                    }, {});
+
+                    const sortedData = {};
+                    cl_idx = 0
+                    for (const cluster of cl_data) {
+                        cl_sorted_data = cluster["data"].sort((a, b) => {
+                            return orderMap[a.axis] - orderMap[b.axis];
+                        });
+                        sortedData["cluster-"+cl_idx] = {
+                            "data": cl_sorted_data,
+                            "countries": cluster["countries"]
+                        }
+                        cl_idx += 1;
+                    }
+                    return sortedData;
+                }
+
+                // Fetch JSON data from URL
+                fetch('files/kmeans_clustering.json')
+                    .then(response => response.json())
+                    .then(jsonData => {
+                        const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
+
+                        const sortedData = sortData(jsonData, categorieOrder);
+                        
+                        color_idx = 0;
+                        for (let cluster in sortedData) {
+                            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
+
+                            let radarChartOptions = {
+                                w: chart_container_width/(num_charts*1.5),
+                                h: chart_container_width/(num_charts*1.5),
+                                margin: chart_container_margin,
+                                label_icon_w: 20,
+                                label_icon_h: 20,
+                                maxValue: 0.3,
+                                levels: 5,
+                                roundStrokes: false,
+                                color: colors[color_idx % colors.length],
+                            };
+
+                            // Create a unique class for each radar chart
+                            let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
+                            chartContainer.append("div").attr("class", chartClass);
+                            RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+
+                            color_idx += 1;
+                        }
+                    })
+                    .catch(error => console.error('Error loading JSON:', error));
             })
             .catch(error => console.error('Error loading ./config/config.json:', error));
-
-        // Function to sort the data according to the provided order
-        function sortData(cl_data, order) {
-            const orderMap = order.reduce((acc, axis, index) => {
-                acc[axis] = index;
-                return acc;
-            }, {});
-
-            const sortedData = {};
-            cl_idx = 0
-            for (const cluster of cl_data) {
-                cl_sorted_data = cluster["data"].sort((a, b) => {
-                    return orderMap[a.axis] - orderMap[b.axis];
-                });
-                sortedData["cluster-"+cl_idx] = {
-                    "data": cl_sorted_data,
-                    "countries": cluster["countries"]
-                }
-                cl_idx += 1;
-            }
-            return sortedData;
-        }
-
-        // Fetch JSON data from URL
-        fetch('files/kmeans_clustering.json')
-            .then(response => response.json())
-            .then(jsonData => {
-                const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
-
-                const sortedData = sortData(jsonData, categorieOrder);
-                
-                color_idx = 0;
-                for (let cluster in sortedData) {
-                    let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
-
-                    let radarChartOptions = {
-                        w: width,
-                        h: height,
-                        margin: margin,
-                        maxValue: 0.3,
-                        levels: 5,
-                        roundStrokes: false,
-                        color: colors[color_idx % colors.length],
-                    };
-
-                    // Create a unique class for each radar chart
-                    let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
-                    chartContainer.append("div").attr("class", chartClass);
-                    RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
-
-                    color_idx += 1;
-                }
-            })
-            .catch(error => console.error('Error loading JSON:', error));
     </script>
 </body>
 </html>

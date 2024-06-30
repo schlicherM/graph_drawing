@@ -3,13 +3,15 @@ function RadarChart(id, data, options) {
         w: 600,                //Width of the circle
         h: 600,                //Height of the circle
         margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
+        label_icon_w: 23,     //if using icons as labels, the width of these
+        label_icon_h: 23,     //if using icons as labels, the height of these
         levels: 3,                //How many levels or inner circles should there be drawn
         maxValue: 0,             //What is the value that the biggest circle will represent
-        labelFactor: 1.5,     //How much farther than the radius of the outer circle should the labels be placed
+        labelFactor: 1.3,     //How much farther than the radius of the outer circle should the labels be placed
         wrapWidth: 60,         //The number of pixels after which a label needs to be given a new line
         opacityArea: 0.5,     //The opacity of the area of the blob
         dotRadius: 4,             //The size of the colored circles of each blog
-        opacityCircles: 0.2,     //The opacity of the circles of each blob
+        opacityCircles: 0.1,     //The opacity of the circles of each blob
         strokeWidth: 2,         //The width of the stroke around each blob
         roundStrokes: true,    //If true the area and stroke will follow a round path (cardinal-closed)
         color: d3.scale.category10()    //Color function
@@ -41,19 +43,21 @@ function RadarChart(id, data, options) {
     /////////////////////////////////////////////////////////
 
     //Adds the Color lables on the bottom
-    d3.select(id).style("border-bottom", function(d){return "solid 6px" + cfg.color }).style("border-radius","4px");
+    // d3.select(id).style("border-bottom", function(d){return "solid 6px" + cfg.color }).style("border-radius","4px");
 
     //Remove whatever chart with the same id/class was present before
     d3.select(id).select("svg").remove();
     
     //Initiate the radar chart SVG
+    var svg_width = cfg.w + cfg.margin.left + cfg.margin.right + cfg.label_icon_w*3;
+    var svg_height = cfg.h + cfg.margin.top + cfg.margin.bottom + cfg.label_icon_h*3;
     var svg = d3.select(id).append("svg")
-            .attr("width",  cfg.w + cfg.margin.left + cfg.margin.right)
-            .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+            .attr("width", svg_width)
+            .attr("height", svg_height)
             .attr("class", "radar"+id);
-    //Append a g element        
+    //Append a g element (centers the chart)
     var g = svg.append("g")
-            .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
+            .attr("transform", "translate(" + (svg_width/2) + "," + (svg_height/2) + ")");
     
     /////////////////////////////////////////////////////////
     ////////// Glow filter for some extra pizzazz ///////////
@@ -122,10 +126,10 @@ function RadarChart(id, data, options) {
         .attr("class", "legend")
         .attr("xlink:href", function(d){ return "/icons/" +  d.toLowerCase() + "_img.svg"; })
 		.attr("alt", function(d){ return d.toLowerCase()})
-        .attr("width", 23) // Adjust the size of the images as needed
-        .attr("height", 23)
-        .attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2) - 10; })
-        .attr("y", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.sin(angleSlice*i - Math.PI/2) - 10; });
+        .attr("width", cfg.label_icon_w)
+        .attr("height", cfg.label_icon_h)
+        .attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2)-cfg.label_icon_w/2; })
+        .attr("y", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.sin(angleSlice*i - Math.PI/2)-cfg.label_icon_h/2; });
 
     /////////////////////////////////////////////////////////
     ///////////// Draw the radar chart blobs ////////////////
