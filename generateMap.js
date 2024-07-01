@@ -76,7 +76,7 @@ async function generateMap(clusterData) {
   const geojson = readJsonFileSync('./public/countries.geo.json');
 
   const map = new DottedMap({
-    height: 150,
+    height: 200,//150
     grid: 'diagonal'
   });
 
@@ -89,7 +89,7 @@ async function generateMap(clusterData) {
 
   // Find the maximum number of medals for each cluster
   const maxMedalsPerCluster = calculateMaxMedals(clusterData, totalMedals);
-  const minOpacity = getConfig("map_min_opacity");; // minimum opacity value
+  const minOpacity = getConfig("map_min_opacity"); // minimum opacity value
 
   for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
     const countries = clusterData[clusterIndex].countries;
@@ -127,16 +127,17 @@ async function generateMap(clusterData) {
         map.addPin({
           lat,
           lng,
-          svgOptions: { color: rgbaColor, radius: 0.4 }
+          svgOptions: { color: rgbaColor, radius: 0.4 }//0.4
         });
       });
     }
   }
 
   const svgMap = map.getSVG({
-    width: 800,
-    height: 400,
-    backgroundColor: '#1f1f1f'
+    width: 8000,
+    height: 4000,
+    color: getConfig("map_color_bg-dark"),
+    backgroundColor: getConfig("map_color_bg-light")
   });
 
   fs.writeFileSync(`./files/map_clusters.svg`, svgMap);

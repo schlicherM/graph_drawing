@@ -15,8 +15,6 @@
             font-size: 50px;
         }
         body {
-            background-color: #1f1f1f;
-            color: white;
             font-family: 'Open Sans', sans-serif;
             font-size: 25px;
             text-align: center;
@@ -31,7 +29,7 @@
            
         }
 
-        #legend-containter {
+        #legend-container {
             position: relative;
             margin: -21% 0px 0px 5%;
             border: 3px solid #fff;
@@ -47,16 +45,6 @@
             flex-wrap: wrap;
             justify-content: center;
             margin: 20px 0 1rem 0;
-        }
-
-        .chart {
-            margin: 2px; /* Weiter reduziert den Abstand zwischen den Charts */
-
-
-        }
-
-        .chart text {
-            fill: white; /* Setzt die Beschriftung der Charts auf Weiß */
         }
 
         .legend {
@@ -80,7 +68,6 @@
          .v-line {
             height: 25px;
             width: 3px;
-            background-color: white;
             border-radius: 99px;
             margin: 0 15px;
          }
@@ -88,11 +75,10 @@
     </style>
 </head>
 <body>
-   
     <div id="map-container">
         <img src="files/map_clusters.svg" alt="">
     </div>
-    <div id="legend-containter">
+    <div id="legend-container">
         <div class="legend-row">
             <img class="legend-icon" src="./icons/athletics_img.svg" alt="">   
             <span class="v-line"></span>
@@ -152,6 +138,17 @@
                 colors = config["map_color_sequence"];
                 num_charts = config["cl_num_clusters"];
 
+                //override colors
+                document.body.style.background = config["map_color_bg-light"];
+                document.body.style.color = config["map_color_fg-light"];
+                document.getElementById("legend-container").style.borderColor = config["map_color_fg-dark"];
+                for(var span of document.getElementsByClassName("v-line")){
+                    span.style.background = config["map_color_fg-dark"];
+                }
+                for(var span of document.getElementsByClassName("legend-icon-label")){
+                    span.style.text = config["map_color_fg-light"];
+                }
+
                 // setup chart container
                 var chart_container_margin = {top: 20, right: 20, bottom: 20, left: 20};
                 var chart_container_width = (window.innerWidth - chart_container_margin.left - chart_container_margin.right);
@@ -192,15 +189,18 @@
                             let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
 
                             let radarChartOptions = {
-                                w: chart_container_width/(num_charts*1.5),
-                                h: chart_container_width/(num_charts*1.5),
+                                w: chart_container_width/(num_charts*1.7),
+                                h: chart_container_width/num_charts,
                                 margin: chart_container_margin,
                                 label_icon_w: 20,
                                 label_icon_h: 20,
-                                maxValue: 0.3,
-                                levels: 5,
+                                maxValue: 0,
+                                levels: 4,
                                 roundStrokes: false,
                                 color: colors[color_idx % colors.length],
+                                charts_secondary_color: config["map_color_fg-dark"],
+                                text_color: config["map_color_fg-light"],
+                                opacityRadarArea: 0.3,
                             };
 
                             // Create a unique class for each radar chart

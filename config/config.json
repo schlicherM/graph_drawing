@@ -2,11 +2,15 @@
     "cl_num_clusters": 5,
     "cl_distance_measure": "cosine",
     "map_color_sequence": [
-        "#2d1a82",
+        "#03b1fc",
         "#dd0000",
-        "#1a823d",
-        "#823d1a",
-        "#821a64"
+        "#00cf1c",
+        "#ffa70f",
+        "#e30af2"
     ],
+    "map_color_bg-light": "#232323",
+    "map_color_bg-dark": "#141414",
+    "map_color_fg-dark": "#cccccc",
+    "map_color_fg-light": "#f5f5f5",
     "map_min_opacity": 0.45
 }
