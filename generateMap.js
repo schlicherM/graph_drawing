@@ -2,7 +2,7 @@ const turf = require('@turf/turf');
 const fs = require('fs');
 const DottedMap = require('dotted-map').default;
 const { mapCountriesToGeoJson } = require('./countryToNoc');
-const { readJsonFileSync, getConfig } = require("./utilities/util")
+const { readJsonFileSync, getConfig } = require("./utilities/util");
 
 // Generate a grid of points within the country boundary
 async function generatePointsForCountry(countryFeature) {
@@ -43,23 +43,17 @@ function calculateTotalMedals(data) {
     }
     totalMedals[link.target] += link.attr.length;
   });
+
   return totalMedals;
 }
 
-// Function to calculate the maximum number of medals for each cluster
-function calculateMaxMedals(clusterData, totalMedals) {
-  return clusterData.map(cluster => {
-      const countries = cluster.countries;
-      const isoCountries = mapCountriesToGeoJson(countries);
-      const clusterMedals = isoCountries.map(countryCode => totalMedals[countryCode] || 0);
-      return Math.max(...clusterMedals);
-  });
-}
-
-
-// Function to calculate opacity based on the number of medals
-function calculateOpacity(medals, maxMedals, minOpacity) {
-  return Math.max(minOpacity, (medals / maxMedals));
+// Function to calculate opacity using logarithmic scaling
+function calculateLogOpacity(medals, minMedals, maxMedals, minOpacity, maxOpacity) {
+  if (medals === 0) return minOpacity;
+  const logMinMedals = Math.log(minMedals + 1);
+  const logMaxMedals = Math.log(maxMedals + 1);
+  const logMedals = Math.log(medals + 1);
+  return minOpacity + (logMedals - logMinMedals) * (maxOpacity - minOpacity) / (logMaxMedals - logMinMedals);
 }
 
 // Function to convert a hex color to RGBA
@@ -88,27 +82,18 @@ async function generateMap(clusterData) {
   const totalMedals = calculateTotalMedals(jsonData);
 
   // Find the maximum number of medals for each cluster
-  const maxMedalsPerCluster = calculateMaxMedals(clusterData, totalMedals);
   const minOpacity = getConfig("map_min_opacity"); // minimum opacity value
+  const maxOpacity = 1.0; // maximum opacity value
+
+  // Berechne die minimale und maximale Anzahl an Medaillen über alle Länder
+  const allMedalCounts = Object.values(totalMedals);
+  const globalMaxMedals = Math.max(...allMedalCounts);
+  const globalMinMedals = Math.min(...allMedalCounts);
 
   for (let clusterIndex = 0; clusterIndex < clusterData.length; clusterIndex++) {
     const countries = clusterData[clusterIndex].countries;
     const color = colors[clusterIndex % colors.length];
-    const maxMedals = maxMedalsPerCluster[clusterIndex];
-
     const isoCountries = mapCountriesToGeoJson(countries);
-
-    // Ausgabe der Länder und Medaillen des vierten Clusters
-   /*  if (clusterIndex === 3) {
-      console.log(`Länder, Medaillen und Opazität für Cluster 4:`);
-      isoCountries.forEach(countryCode => {
-        const medals = totalMedals[countryCode] || 0;
-        const opacity = calculateOpacity(medals, maxMedals, minOpacity);
-        if(opacity>0.7){
-          console.log(`Land: ${countryCode}, Medaillen: ${medals}, Opazität: ${opacity.toFixed(2)}`);
-        }
-      });
-    } */
 
     for (const countryCode of isoCountries) {
       const countryFeature = geojson.features.find(feature => feature.id === countryCode);
@@ -119,7 +104,7 @@ async function generateMap(clusterData) {
 
       const pointsWithin = await generatePointsForCountry(countryFeature);
       const medals = totalMedals[countryCode] || 0;
-      const opacity = calculateOpacity(medals, maxMedals, minOpacity);
+      const opacity = calculateLogOpacity(medals, globalMinMedals, globalMaxMedals, minOpacity, maxOpacity);
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
 
       pointsWithin.forEach(point => {
