@@ -9,7 +9,7 @@ function filterLinksByCountry(links, country) {
     return links.filter(link => link.target === country);
 }
 
-        // Calculate medals for each category by country
+// Calculate medals for each category by country
 function calculateMedalsByCategory(filteredLinks, categories) {
     let categoryTotals = {};
     let totalMedalsForCountry = 0;
@@ -49,6 +49,33 @@ function prepareRadarChartData(data) {
     return radarData;
 }
 
+// calculate all medals for each contry
+function calculateMedalsPerCountry(data) {
+    const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
+    let medalsPerCountry = {};
+
+    data.nodes.forEach(node => {
+        if (node.noc) {  // Ensure node has a country code (noc)
+            let filteredLinks = filterLinksByCountry(data.links, node.id);
+
+            // Initialize totals
+            let totalMedalsForCountry = 0;
+
+            filteredLinks.forEach(link => {
+                if (categories.includes(link.source)) {  // Check if the category is not "other" or "teams"
+                    link.attr.forEach(attr => {
+                        totalMedalsForCountry++;  // Increment total medals for the country
+                    });
+                }
+            });
+
+            medalsPerCountry[node.noc] = totalMedalsForCountry;
+        }
+    });
+
+    return medalsPerCountry;
+}
+
 function generateClustering(){
     clusterAverages = Object();
     try {
@@ -65,8 +92,11 @@ function generateClustering(){
         // Number of clusters (adjust as needed)
         const numClusters = getConfig("cl_num_clusters");
 
+        // Medal per country
+        const medalsPerCountry = calculateMedalsPerCountry(jsonData)
+
         // Perform k-means clustering
-        const clusters = kmeans(dataForClustering, numClusters, countryNames);
+        const clusters = kmeans(dataForClustering, numClusters, countryNames, medalsPerCountry);
 
         // Calculate average medals for each cluster
         clusterAverages = calculateClusterAverages(clusters);

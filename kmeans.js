@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { getConfig } = require("./utilities/util");
 const { euclideanDistance, manhattanDistance, cosineDistance } = require("./utilities/distance_measures");
 
@@ -18,9 +19,9 @@ function distanceFunction(a, b) {
     }
     return f(a, b);
 }
-
+  
 // K-means clustering with country names
-function kmeans(data, k, countryNames) {
+function kmeans(data, k, countryNames, medalsPerCountry) {
     let centroids = data.slice(0, k).map((d, i) => ({ data: d, countries: [countryNames[i]] }));
     let clusters = Array.from({ length: k }, () => ({ data: [], countries: [] }));
 
@@ -69,6 +70,25 @@ function kmeans(data, k, countryNames) {
             }
         });
     }
+
+    // Determine top countries per cluster
+    let topCountriesByCluster = [];
+    clusters.forEach(cluster => {
+        let countriesWithMedals = cluster.countries.map(country => ({
+            name: country,
+            medals: medalsPerCountry[country] || 0
+        }));
+        countriesWithMedals.sort((a, b) => b.medals - a.medals);
+        let top10Countries = countriesWithMedals.slice(0, 10); // Get top 10 countries
+        topCountriesByCluster.push(top10Countries);
+
+        // Print top countries for the current cluster
+        console.log(`Cluster ${topCountriesByCluster.length}:`);
+        top10Countries.forEach((country, rank) => {
+            console.log(`${rank + 1}. ${country.name}: ${country.medals} Medaillen`);
+        });
+        console.log();
+    });
 
     return clusters;
 }
