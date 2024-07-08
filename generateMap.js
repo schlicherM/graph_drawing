@@ -107,7 +107,7 @@ async function generateMap(clusterData) {
       const opacity = calculateLogOpacity(medals, globalMinMedals, globalMaxMedals, minOpacity, maxOpacity);
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
 
-      if(countryCode == "SGP" || countryCode == "MYS"){
+      if(countryCode == "SGP" || countryCode == "HKG"){
         console.log(countryCode)
         console.log(pointsWithin.length)
         console.log(medals)
