@@ -106,14 +106,22 @@ async function generateMap(clusterData) {
       const medals = totalMedals[countryCode] || 0;
       const opacity = calculateLogOpacity(medals, globalMinMedals, globalMaxMedals, minOpacity, maxOpacity);
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
-
-      if(countryCode == "SGP" || countryCode == "HKG"){
-        console.log(countryCode)
-        console.log(pointsWithin.length)
-        console.log(medals)
-        console.log(opacity)
-        console.log(rgbaColor)
-      }
+      
+      // manually added countries ;)
+      // if(
+      //   countryCode == "SGP" || 
+      //   countryCode == "HKG" || 
+      //   countryCode == "SMR" || 
+      //   countryCode == "TGA" ||
+      //   countryCode == "SAM" ||
+      //   countryCode == "MRI" ||
+      //   countryCode == "BAR" ||
+      //   countryCode == "GRN"
+      // ){
+      //   console.log(countryCode)
+      //   console.log(pointsWithin.length)
+      //   console.log(rgbaColor)
+      // }
 
       pointsWithin.forEach(point => {
         const [lng, lat] = point.geometry.coordinates;
