@@ -10,7 +10,7 @@
     ],
     "map_color_bg-light": "#232323",
     "map_color_bg-dark": "#141414",
-    "map_color_fg-dark": "#cccccc",
     "map_color_fg-light": "#f5f5f5",
+    "map_color_fg-dark": "#cccccc",
     "map_min_opacity": 0.35
 }
