@@ -71,7 +71,17 @@
             border-radius: 99px;
             margin: 0 15px;
          }
-
+         .flag-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .flag-icon {
+            width: 10px;
+            height: auto;
+            margin: 0 1px;
+        }
     </style>
 </head>
 <body>
@@ -207,6 +217,38 @@
                             let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
                             chartContainer.append("div").attr("class", chartClass);
                             RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+
+                            // countries with most medals per
+                            let topCountries = {
+                            "cluster-0": [
+                                "TUR", "AZE", "KAZ", "BUL", "ROC", "CUB", "KOR", "JPN", "FRA", "RUS"
+                            ],
+                            "cluster-1": [
+                                "CZE", "BLR", "BRA", "NZL", "POL", "ROU", "ESP", "UKR", "HUN", "ITA"
+                            ],
+                            "cluster-2": [
+                                "DOM", "TTO", "BAH", "POR", "ALG", "NGR", "MAR", "ETH", "JAM", "KEN"
+                            ],
+                            "cluster-3": [
+                                "SGP", "CHI", "MAS", "INA"
+                            ],
+                            "cluster-4": [
+                                "SUI", "SWE", "EUN", "CAN", "NED", "AUS", "GBR", "GER", "CHN", "USA"
+                            ]
+                        }[cluster];
+
+
+                            // Insert flag icons for top countries
+                            let flagContainer = chartContainer.append("div").attr("class", "flag-container");
+                            for (let i = 0; i < topCountries.length; i++) {
+                                let countryNoc = topCountries[i];
+                                let flagImg = document.createElement("img");
+                                flagImg.src = `./flags/${countryNoc}.svg`;
+                                flagImg.alt = countryNoc;
+                                flagImg.className = "flag-icon";
+                                flagContainer.node().appendChild(flagImg);
+                            }
+
 
                             color_idx += 1;
                         }
