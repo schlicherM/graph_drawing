@@ -44,7 +44,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            margin: 20px 0 1rem 0;
+            margin:70px 0 1rem 0;
         }
 
         .legend {
@@ -196,7 +196,7 @@
                         
                         color_idx = 0;
                         for (let cluster in sortedData) {
-                            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart");
+                            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart").style("width","17%").style("margin","0 1.5%");
 
                             let radarChartOptions = {
                                 w: chart_container_width/(num_charts*1.7),
@@ -216,6 +216,23 @@
                             // Create a unique class for each radar chart
                             let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
                             chartContainer.append("div").attr("class", chartClass);
+                            chartContainer.append("div").attr("id", chartClass+"-gradient").attr("class","gradient-div").style("display","contents")
+                            let charGradient = d3.select("#"+chartClass+"-gradient");
+                            
+                            charGradient.append("img")
+                                .attr("src", "/files/square.png")
+                                .attr("class","gradient-container")
+                                .style("width", "90%")
+                                .style("background",`linear-gradient(90deg, ${config["map_color_bg-light"]} 10%,${colors[color_idx % colors.length]} 180% )`)
+
+                            charGradient.append("img")
+                                .attr("src","/files/trapezoid.png")
+                                .attr("class","gradient-trapezoid")
+                                .style("clip-path", "polygon(24% 0px, 75% 0px, 100% 100%, 0% 100%)")
+                                .style("background",`linear-gradient(90deg, ${config["map_color_bg-light"]} 30%,${colors[color_idx % colors.length]} 180% )`)
+                                .style("margin-left","-37%")
+                                .style("width","175%")
+                           
                             RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
 
                             // countries with most medals per
