@@ -70,7 +70,7 @@ async function generateMap(clusterData) {
   const geojson = readJsonFileSync('./public/countries.geo.json');
 
   const map = new DottedMap({
-    height: 200,//150
+    height: 240,//150
     grid: 'diagonal'
   });
 
@@ -106,6 +106,14 @@ async function generateMap(clusterData) {
       const medals = totalMedals[countryCode] || 0;
       const opacity = calculateLogOpacity(medals, globalMinMedals, globalMaxMedals, minOpacity, maxOpacity);
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
+
+      if(countryCode == "SGP" || countryCode == "MYS"){
+        console.log(countryCode)
+        console.log(pointsWithin.length)
+        console.log(medals)
+        console.log(opacity)
+        console.log(rgbaColor)
+      }
 
       pointsWithin.forEach(point => {
         const [lng, lat] = point.geometry.coordinates;
