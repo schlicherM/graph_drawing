@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { generateMap } = require('./generateMap');
+const { generateFlightLines } = require('./generateFlightLines');
 const { mapCountriesToGeoJson } = require('./countryToNoc');
 const { log } = require('console');
 const { SourceTextModule } = require('vm');
@@ -186,13 +187,14 @@ function generateRadarCharts() {
             clusterAverages[clusterIndex].countries = nocToIso;
         });
         
-        generateMap(clusterAverages).then(() => {
+        generateMap(clusterData).then(() => {
             console.log('Combined dotted map created for all clusters');
+            return generateFlightLines();
+        }).then(() => {
+            console.log('Flight lines SVG generated.');
         }).catch(err => {
             console.error(err);
         });
-
-        
 
     } catch (error) {
         console.error('Error generating radar charts:', error);

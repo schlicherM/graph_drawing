@@ -39,7 +39,30 @@
 </head>
 <body>
     <p>Different skill profiles for the Olympic Games</p>
-    <img src="files/map_clusters.svg" alt="">
+    <div id="svg-container"></div>
+
+    <script>
+      // Fetch and embed the map SVG
+      fetch('files/map_clusters.svg')
+        .then(response => response.text())
+        .then(mapSvg => {
+          const parser = new DOMParser();
+          const mapDoc = parser.parseFromString(mapSvg, 'image/svg+xml').documentElement;
+  
+          // Fetch and embed the flight lines SVG
+          fetch('files/flight_lines.svg')
+            .then(response => response.text())
+            .then(flightLinesSvg => {
+              const flightLinesDoc = parser.parseFromString(flightLinesSvg, 'image/svg+xml').documentElement;
+  
+              // Append flight lines to the map
+              mapDoc.appendChild(flightLinesDoc);
+  
+              // Append combined SVG to container
+              document.getElementById('svg-container').appendChild(mapDoc);
+            });
+        });
+    </script>
     <div id="chart-container"></div>
 
     <script src="radarChart.js"></script>
