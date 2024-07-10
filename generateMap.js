@@ -135,10 +135,10 @@ async function generateMap(clusterData) {
   }
 
   const svgMap = map.getSVG({
-    width: 8000,
+    width: 8200,
     height: 4000,
     color: getConfig("map_color_bg-dark"),
-    backgroundColor: getConfig("map_color_bg-light")
+    backgroundColor: null
   });
 
   fs.writeFileSync(`./files/map_clusters.svg`, svgMap);
