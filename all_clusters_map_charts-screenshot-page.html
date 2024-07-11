@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map and Radar Charts</title>
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <!-- D3.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <style>
+        #title {
+            margin-top: 3rem;
+            font-size: 50px;
+        }
+        body {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 25px;
+            text-align: center;
+        }
+        img {
+            width: 100%;
+        }
+
+        #map-container {
+            z-index: 10;
+            position: relative;
+           
+        }
+
+        #legend-container {
+            position: relative;
+            margin: -21% 0px 0px 5%;
+            border: 3px solid #fff;
+            z-index: 20;
+            height: 240px;
+            border-radius: 10px;
+            padding: 10px;
+            width: 160px;
+        }
+
+        #chart-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin:70px 0 1rem 0;
+        }
+
+        .legend {
+            filter: invert(95%) sepia(95%) saturate(18%) hue-rotate(292deg) brightness(105%) contrast(106%); /*Macht die SVG's*/
+        }
+
+        .legend-row {
+            display: flex;
+            padding: 1px 0px;
+        }
+
+        .legend-icon {
+            filter: invert(95%) sepia(95%) saturate(18%) hue-rotate(292deg) brightness(105%) contrast(106%); /*Macht die SVG's*/
+            height: 20px;
+            align-self: center;
+            width: 15%;
+        }
+         .legend-icon-label {
+            font-size: 18px;
+         }
+         .v-line {
+            height: 25px;
+            width: 3px;
+            border-radius: 99px;
+            margin: 0 15px;
+         }
+         .flag-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .flag-icon {
+            width: 10px;
+            height: auto;
+            margin: 0 1px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chart-container"></div>
+    <script src="radarChart.js"></script>
+    <script>
+        /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
+        fetch('./config/config.json')
+            .then(response => response.json())
+            .then(config => {
+                // get externally defined settings from config.json
+                colors = config["map_color_sequence"];
+                num_charts = config["cl_num_clusters"];
+
+                //override colors
+                document.body.style.background = config["map_color_bg-light"];
+                document.body.style.color = config["map_color_fg-light"];
+                // document.getElementById("legend-container").style.borderColor = config["map_color_fg-dark"];
+                // for(var span of document.getElementsByClassName("v-line")){
+                //     span.style.background = config["map_color_fg-dark"];
+                // }
+                // for(var span of document.getElementsByClassName("legend-icon-label")){
+                //     span.style.text = config["map_color_fg-light"];
+                // }
+
+                // setup chart container
+                var chart_container_margin = {top: 20, right: 20, bottom: 20, left: 20};
+                var chart_container_width = (window.innerWidth - chart_container_margin.left - chart_container_margin.right);
+                var chart_container_height = (window.innerHeight - chart_container_margin.top - chart_container_margin.bottom);
+
+                // Function to sort the data according to the provided order
+                function sortData(cl_data, order) {
+                    const orderMap = order.reduce((acc, axis, index) => {
+                        acc[axis] = index;
+                        return acc;
+                    }, {});
+
+                    const sortedData = {};
+                    cl_idx = 0
+                    for (const cluster of cl_data) {
+                        cl_sorted_data = cluster["data"].sort((a, b) => {
+                            return orderMap[a.axis] - orderMap[b.axis];
+                        });
+                        sortedData["cluster-"+cl_idx] = {
+                            "data": cl_sorted_data,
+                            "countries": cluster["countries"]
+                        }
+                        cl_idx += 1;
+                    }
+                    return sortedData;
+                }
+
+                // Fetch JSON data from URL
+                fetch('files/kmeans_clustering.json')
+                    .then(response => response.json())
+                    .then(jsonData => {
+                        const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
+
+                        const sortedData = sortData(jsonData, categorieOrder);
+                        
+                        color_idx = 0;
+                        for (let cluster in sortedData) {
+                            let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart").style("width","100%").style("height", "100%");
+
+                            let radarChartOptions = {
+                                w: 250,
+                                h: 250,
+                                margin: chart_container_margin,
+                                label_icon_w: 25,
+                                label_icon_h: 25,
+                                maxValue: 0,
+                                levels: 4,
+                                roundStrokes: false,
+                                color: colors[color_idx % colors.length],
+                                charts_secondary_color: config["map_color_fg-dark"],
+                                text_color: config["map_color_fg-light"],
+                                opacityRadarArea: 0.3,
+                            };
+
+                            // Create a unique class for each radar chart
+                            let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
+                            chartContainer.append("div").attr("class", chartClass);
+
+                           
+                            RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+                            color_idx += 1;
+                        }
+                    })
+                    .catch(error => console.error('Error loading JSON:', error));
+            })
+            .catch(error => console.error('Error loading ./config/config.json:', error));
+    </script>
+</body>
+</html>
