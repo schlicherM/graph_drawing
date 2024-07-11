@@ -79,7 +79,7 @@ function kmeans(data, k, countryNames, medalsPerCountry) {
             medals: medalsPerCountry[country] || 0
         }));
         countriesWithMedals.sort((a, b) => b.medals - a.medals);
-        let top10Countries = countriesWithMedals.slice(0, 10); // Get top 10 countries
+        let top10Countries = countriesWithMedals.slice(0, 11); // Get top 10 countries
         topCountriesByCluster.push(top10Countries);
 
         // Print top countries for the current cluster
