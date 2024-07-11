@@ -186,15 +186,73 @@
                     return sortedData;
                 }
 
-                // Fetch JSON data from URL
+                // fetch JSON
                 fetch('files/kmeans_clustering.json')
                     .then(response => response.json())
                     .then(jsonData => {
                         const categorieOrder = ["boating", "swimming", "cycling", "racquets", "gymnastics", "fighting", "shooting", "equestrian", "athletics"];
 
                         const sortedData = sortData(jsonData, categorieOrder);
-                        
-                        color_idx = 0;
+
+                        // Define medal counts for each cluster
+                        const medalCounts = {
+                            "cluster-0": {
+                                "IRI": 35,
+                                "TUR": 45,
+                                "AZE": 49,
+                                "KAZ": 59,
+                                "BUL": 60,
+                                "CUB": 167,
+                                "KOR": 192,
+                                "JPN": 228,
+                                "FRA": 273,
+                                "RUS": 382
+                            },
+                            "cluster-1": {
+                                "CZE": 65,
+                                "BLR": 75,
+                                "BRA": 76,
+                                "NZL": 80,
+                                "POL": 91,
+                                "ROU": 104,
+                                "ESP": 119,
+                                "UKR": 132,
+                                "HUN": 132,
+                                "ITA": 225
+                            },
+                            "cluster-2": {
+                                "DOM": 8,
+                                "TTO": 12,
+                                "BAH": 14,
+                                "POR": 15,
+                                "ALG": 15,
+                                "NGR": 18,
+                                "MAR": 18,
+                                "ETH": 48,
+                                "JAM": 66,
+                                "KEN": 82
+                            },
+                            "cluster-3": {
+                                "SGP": 4,
+                                "CHI": 4,
+                                "MAS": 13,
+                                "INA": 21
+                            },
+                            "cluster-4": {
+                                "RSA": 36,
+                                "SUI": 51,
+                                "SWE": 65,
+                                "CAN": 140,
+                                "NED": 154,
+                                "AUS": 301,
+                                "GBR": 323,
+                                "GER": 380,
+                                "CHN": 484,
+                                "USA": 774
+                            }
+                        };
+
+                        let color_idx = 0;
                         for (let cluster in sortedData) {
                             let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart").style("width","17%").style("margin","0 1.5%");
 
@@ -218,54 +276,27 @@
                             chartContainer.append("div").attr("class", chartClass);
                             chartContainer.append("div").attr("id", chartClass+"-gradient").attr("class","gradient-div").style("display","contents")
                             let charGradient = d3.select("#"+chartClass+"-gradient");
-                            
+
                             charGradient.append("img")
                                 .attr("src", "/files/square.png")
                                 .attr("class","gradient-container")
                                 .style("width", "90%")
-                                .style("background",`linear-gradient(90deg, ${config["map_color_bg-light"]} 10%,${colors[color_idx % colors.length]} 180% )`)
+                                .style("background",`linear-gradient(90deg, ${config["map_color_bg-light"]} 10%,${colors[color_idx % colors.length]} 180% )`);
 
-                            charGradient.append("img")
-                                .attr("src","/files/trapezoid.png")
-                                .attr("class","gradient-trapezoid")
-                                .style("clip-path", "polygon(24% 0px, 75% 0px, 100% 100%, 0% 100%)")
-                                .style("background",`linear-gradient(90deg, ${config["map_color_bg-light"]} 30%,${colors[color_idx % colors.length]} 180% )`)
-                                .style("margin-left","-37%")
-                                .style("width","175%")
-                           
                             RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
 
-                            // countries with most medals per
-                            let topCountries = {
-                            "cluster-0": [
-                                "TUR", "AZE", "KAZ", "BUL", "ROC", "CUB", "KOR", "JPN", "FRA", "RUS"
-                            ],
-                            "cluster-1": [
-                                "CZE", "BLR", "BRA", "NZL", "POL", "ROU", "ESP", "UKR", "HUN", "ITA"
-                            ],
-                            "cluster-2": [
-                                "DOM", "TTO", "BAH", "POR", "ALG", "NGR", "MAR", "ETH", "JAM", "KEN"
-                            ],
-                            "cluster-3": [
-                                "SGP", "CHI", "MAS", "INA"
-                            ],
-                            "cluster-4": [
-                                "SUI", "SWE", "EUN", "CAN", "NED", "AUS", "GBR", "GER", "CHN", "USA"
-                            ]
-                        }[cluster];
-
+                            // countries with most medals per cluster
+                            let topCountries = Object.keys(medalCounts[cluster]);
 
                             // Insert flag icons for top countries
                             let flagContainer = chartContainer.append("div").attr("class", "flag-container");
-                            for (let i = 0; i < topCountries.length; i++) {
-                                let countryNoc = topCountries[i];
+                            topCountries.forEach(countryNoc => {
                                 let flagImg = document.createElement("img");
                                 flagImg.src = `./flags/${countryNoc}.svg`;
                                 flagImg.alt = countryNoc;
                                 flagImg.className = "flag-icon";
                                 flagContainer.node().appendChild(flagImg);
-                            }
-
+                            });
 
                             color_idx += 1;
                         }
