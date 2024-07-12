@@ -142,6 +142,8 @@
 
                         const sortedData = sortData(jsonData, categorieOrder);
                         
+                        // rescaling parameter
+                        epsilon = 0.1; // 0.1
                         color_idx = 0;
                         for (let cluster in sortedData) {
                             let chartContainer = d3.select("#chart-container").append("div").attr("class", "chart").style("width","100%").style("height", "100%");
@@ -159,14 +161,22 @@
                                 charts_secondary_color: config["map_color_fg-dark"],
                                 text_color: config["map_color_fg-light"],
                                 opacityRadarArea: 0.3,
+                                scalingMin: epsilon,
                             };
 
                             // Create a unique class for each radar chart
                             let chartClass = "radarChart-" + cluster.replace(/\s+/g, '');
                             chartContainer.append("div").attr("class", chartClass);
 
-                           
-                            RadarChart("." + chartClass, [sortedData[cluster]["data"]], radarChartOptions);
+                            let data = sortedData[cluster]["data"]
+                            values = []
+                            for(var d of data){values.push(d["value"]);}
+                            min = Math.min(...values)
+                            max = Math.max(...values)
+                            for(var d of data){
+                                d["value"] = epsilon+(d["value"]-min)*(max-epsilon)/(max-min);
+                            }
+                            RadarChart("." + chartClass, [data], radarChartOptions);
                             color_idx += 1;
                         }
                     })
