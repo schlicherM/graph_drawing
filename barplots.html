@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map and Radar Charts</title>
+    <!-- Google fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        #title {
+            margin-top: 3rem;
+            font-size: 50px;
+        }
+        body {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 25px;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Define margins
+        const margin = {top: 70, right: 30, bottom: 40, left: 50};
+
+        // Define width and height as the full dimensions minus margins
+        const scale = 2.5;
+        const width = scale * 960 - margin.left - margin.right;
+        const height = scale * 500 - margin.top - margin.bottom;
+
+        // Create SVG container
+        const svg = d3.select('body').append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+          .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Data for top ten countries by cluster
+        const data_cluster1 = [
+            { country: 'RUS', medals: 382 },
+            { country: 'FRA', medals: 273 },
+            { country: 'JPN', medals: 228 },
+            { country: 'KOR', medals: 192 },
+            { country: 'CUB', medals: 167 },
+            { country: 'BUL', medals: 65 },
+            { country: 'KAZ', medals: 59 },
+            { country: 'AZE', medals: 49 },
+            { country: 'TUR', medals: 45 },
+            { country: 'IRI', medals: 35 }
+        ];
+
+        const data_cluster2 = [
+            { country: 'ITA', medals: 225 },
+            { country: 'HUN', medals: 132 },
+            { country: 'UKR', medals: 132 },
+            { country: 'ESP', medals: 119 },
+            { country: 'ROU', medals: 104 },
+            { country: 'POL', medals: 91 },
+            { country: 'NZL', medals: 80 },
+            { country: 'BRA', medals: 76 },
+            { country: 'BLR', medals: 75 },
+            { country: 'CZE', medals: 65 }
+        ];
+
+        const data_cluster3 = [
+            { country: 'KEN', medals: 82 },
+            { country: 'JAM', medals: 66 },
+            { country: 'ETH', medals: 48 },
+            { country: 'MAR', medals: 18 },
+            { country: 'NGR', medals: 18 },
+            { country: 'ALG', medals: 15 },
+            { country: 'POR', medals: 15 },
+            { country: 'BAH', medals: 14 },
+            { country: 'TTO', medals: 12 },
+            { country: 'DOM', medals: 8 }
+        ];
+
+        const data_cluster4 = [
+            { country: 'INA', medals: 21 },
+            { country: 'MAS', medals: 13 },
+            { country: 'CHI', medals: 4 },
+            { country: 'SGP', medals: 4 }
+        ];
+
+        const data_cluster5 = [
+            { country: 'USA', medals: 774 },
+            { country: 'CHN', medals: 484 },
+            { country: 'GER', medals: 380 },
+            { country: 'GBR', medals: 323 },
+            { country: 'AUS', medals: 301 },
+            { country: 'NED', medals: 154 },
+            { country: 'CAN', medals: 140 },
+            { country: 'SWE', medals: 65 },
+            { country: 'SUI', medals: 51 },
+            { country: 'RSA', medals: 36 }
+        ];
+        
+        //function to create a barplot
+        function createBarplot(data){
+            // Select the container element
+            const container = d3.select('.container');
+    
+            // Set the width and height of the barplot
+            const scale = 2.5;
+            const width = scale * 500 * 0.4;
+            const height = scale * 300;
+    
+            // Set the scales for x and y axes
+            const xScale = d3.scaleBand()
+                .domain(data.map(d => d.country))
+                .range([0, width])
+                .padding(0.1);
+    
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.medals)])
+                .range([height, 0]);
+    
+            // Create the bars
+            svg.selectAll('rect')
+                .data(data)
+                .enter()
+                .append('rect')
+                .attr('x', d => xScale(d.country))
+                .attr('y', d => yScale(d.medals))
+                .attr('width', xScale.bandwidth())
+                .attr('height', d => height - yScale(d.medals))
+                .attr('fill', 'steelblue');
+    
+            // Append flag icons on top of the bars
+            svg.selectAll('image')
+                .data(data)
+                .enter()
+                .append('image')
+                .attr('xlink:href', d => `flags/${d.country}.svg`) 
+                .attr('x', d => xScale(d.country) + (xScale.bandwidth() / 2) - 40)
+                .attr('y', d => yScale(d.medals) - 35)
+                .attr('width', 80)
+                .attr('height', 60) 
+                .attr('transform', d => `rotate(180, ${xScale(d.country) + (xScale.bandwidth() / 2)}, ${yScale(d.medals) - 20})`); 
+        }
+
+        async function convertImagesToDataUrls(svg) {
+            const images = svg.querySelectorAll('image');
+            for (let img of images) {
+                const href = img.getAttribute('href') || img.getAttribute('xlink:href');
+                const response = await fetch(href);
+                const blob = await response.blob();
+                const dataUrl = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(blob);
+                });
+                img.setAttribute('href', dataUrl);
+            }
+        }
+
+        async function exportSVGAsPNG() {
+            const svg = document.querySelector('svg');
+            await convertImagesToDataUrls(svg); // Convert all external images to data URLs
+
+            const serializer = new XMLSerializer();
+            const svgStr = serializer.serializeToString(svg);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = svg.getBoundingClientRect().width;
+            canvas.height = svg.getBoundingClientRect().height;
+            const ctx = canvas.getContext('2d');
+            const DOMURL = window.URL || window.webkitURL || window;
+
+            const img = new Image();
+            const svgBlob = new Blob([svgStr], {type: 'image/svg+xml;charset=utf-8'});
+            const url = DOMURL.createObjectURL(svgBlob);
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0);
+                DOMURL.revokeObjectURL(url);
+
+                // Convert canvas to PNG
+                const imgURI = canvas.toDataURL('image/png');
+
+                // Automatically download the PNG
+                const a = document.createElement('a');
+                a.href = imgURI;
+                a.download = 'barplot_with_flags.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+            img.src = url;
+        }
+    
+        createBarplot(data_cluster4);
+        exportSVGAsPNG();
+    </script>
+</body>
+</html>
