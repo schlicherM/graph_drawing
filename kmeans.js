@@ -84,6 +84,9 @@ function kmeans(data, k, countryNames, medalsPerCountry) {
 
         // Print top countries for the current cluster
         console.log(`Cluster ${topCountriesByCluster.length}:`);
+         //calculate how many countries are in a cluster
+         let countriesInCluster = cluster.countries.length;
+         console.log(`Cluster ${topCountriesByCluster.length}: ${countriesInCluster} Länder`);
         top10Countries.forEach((country, rank) => {
             console.log(`${rank + 1}. ${country.name}: ${country.medals} Medaillen`);
         });
