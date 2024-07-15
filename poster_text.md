@@ -1,8 +1,10 @@
 ### Title
-Medal Distributions Across the Globe
-What do Grenada and Iceland have in common?
-Clustering Performance Across Sports - Medal Distributions at the Olympics
-// all of these are kinda sh*t but coming up with a good title is both very important and very difficult...
+Medal Distributions Across the Globe 
+What do Grenada and Iceland have in common? 
+Clustering Performance Across Sports - Medal Distributions at the Olympics 
+// all of these are kinda sh*t but coming up with a good title is both very important and very difficult... 
+Clusters of Champions: Medal Distributions and Trends in the Oylmpic Games since 1992 
+Clusters of Champions: Olympic Patterns of Success accross the World 
 
 ### Text
 #### Colors
