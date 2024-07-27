@@ -1,0 +1,7 @@
+## Clusters of Champions: Patterns of Success at the Olympics 1992-2020
+
+The aim of this poster is to provide a comprehensive visualization of Olympic medal distributions across various sports categories from 1992 to 2020. It addresses key research questions, including: Are there distinct clusters of countries based on medal distribution? How are these clusters geographically distributed? Which are the best-performing countries within and across clusters? Which countries have excelled in each medal category since 1992? The analysis starts in 1992 to avoid skewed data from historical geopolitical changes in the participations.
+Countries are assigned to clusters based on medal distribution similarities using K-means clustering with cosine distance. Each cluster contains a different number of countries and is represented by a unique color. Radar charts depict the skill profiles for each cluster, and bar plots compare the top ten countries within each cluster, detailing their medal achievements. The world map uses these colors to show the global distribution of the clusters, with opacity indicating the total number of medals won, displayed on a logarithmic scale.
+White edges trace the sequence of Olympic host cities, while gold, silver, and bronze edges connect venues to the top countries for each medal class, highlighting the leading performers, primarily the USA. This visualization offers a detailed overview of Olympic performance, revealing both the geographical and categorical distribution of medals.
+
+
