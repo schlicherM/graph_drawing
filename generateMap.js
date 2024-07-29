@@ -77,8 +77,8 @@ async function generateMap(clusterData) {
   // add colors for clusters
   const colors = getConfig("map_color_sequence");
 
-  // load data.json and calculate medals
-  const jsonData = JSON.parse(fs.readFileSync('public/data.json', 'utf8'));
+  // load filtered_data.json and calculate medals
+  const jsonData = JSON.parse(fs.readFileSync('public/filtered_data.json', 'utf8'));
   const totalMedals = calculateTotalMedals(jsonData);
 
   // Find the maximum number of medals for each cluster
