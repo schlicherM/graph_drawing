@@ -34,17 +34,35 @@ async function generatePointsForCountry(countryFeature) {
   return pointsWithin;
 }
 
+function filterLinksByCountry(links, country) {
+  return links.filter(link => link.target === country);
+}
+
 // Function to calculate total medals for each country
 function calculateTotalMedals(data) {
-  let totalMedals = {};
-  data.links.forEach(link => {
-    if (!totalMedals[link.target]) {
-      totalMedals[link.target] = 0;
-    }
-    totalMedals[link.target] += link.attr.length;
+  const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
+  let medalsPerCountry = {};
+
+  data.nodes.forEach(node => {
+      if (node.noc) {  // Ensure node has a country code (noc)
+          let filteredLinks = filterLinksByCountry(data.links, node.id);
+
+          // Initialize totals
+          let totalMedals = 0;
+
+          filteredLinks.forEach(link => {
+              if (categories.includes(link.source)) {  // Check if the category is not "other" or "teams"
+                  link.attr.forEach(attr => {
+                    totalMedals++;  // Increment total medals for the country
+                  });
+              }
+          });
+
+          medalsPerCountry[node.noc] = totalMedals;
+      }
   });
 
-  return totalMedals;
+  return medalsPerCountry; 
 }
 
 // Function to calculate opacity using logarithmic scaling
@@ -80,6 +98,8 @@ async function generateMap(clusterData) {
   // load filtered_data.json and calculate medals
   const jsonData = JSON.parse(fs.readFileSync('public/filtered_data.json', 'utf8'));
   const totalMedals = calculateTotalMedals(jsonData);
+
+  // console.log("Total Medals Data: ", totalMedals);  // Output the total medals data
 
   // Find the maximum number of medals for each cluster
   const minOpacity = getConfig("map_min_opacity"); // minimum opacity value
