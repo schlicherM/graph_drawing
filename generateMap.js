@@ -38,31 +38,50 @@ function filterLinksByCountry(links, country) {
   return links.filter(link => link.target === country);
 }
 
+// Calculate medals for each category by country
+function calculateMedalsByCategory(filteredLinks, categories) {
+  let categoryTotals = {};
+  let totalMedalsForCountry = 0;
+
+  filteredLinks.forEach(link => {
+    let category = link.source; // Use link.source to get the category
+    if (category !== "other" && category !== "teams") { // Exclude "other" and "teams"
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = 0;
+      }
+      link.attr.forEach(() => {
+        categoryTotals[category]++;
+        totalMedalsForCountry++; // Increment total medals for the country
+      });
+    }
+  });
+
+  return {
+    totalMedalsForCountry,
+    categories: categories.map(category => ({
+      axis: category,
+      value: (categoryTotals[category] / totalMedalsForCountry) || 0 // Normalize by total medals for the country
+    }))
+  };
+}
+
 // Function to calculate total medals for each country
 function calculateTotalMedals(data) {
-  const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams");  // Get unique categories from data, excluding "other" and "teams"
+  const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams"); // Get unique categories from data, excluding "other" and "teams"
   let medalsPerCountry = {};
 
   data.nodes.forEach(node => {
-      if (node.noc) {  // Ensure node has a country code (noc)
-          let filteredLinks = filterLinksByCountry(data.links, node.id);
+    if (node.noc) { // Ensure node has a country code (noc)
+      let filteredLinks = filterLinksByCountry(data.links, node.id);
 
-          // Initialize totals
-          let totalMedals = 0;
+      // Calculate medals by category
+      const { totalMedalsForCountry } = calculateMedalsByCategory(filteredLinks, categories);
 
-          filteredLinks.forEach(link => {
-              if (categories.includes(link.source)) {  // Check if the category is not "other" or "teams"
-                  link.attr.forEach(attr => {
-                    totalMedals++;  // Increment total medals for the country
-                  });
-              }
-          });
-
-          medalsPerCountry[node.noc] = totalMedals;
-      }
+      medalsPerCountry[node.noc] = totalMedalsForCountry;
+    }
   });
 
-  return medalsPerCountry; 
+  return medalsPerCountry;
 }
 
 // Function to calculate opacity using logarithmic scaling
@@ -99,7 +118,7 @@ async function generateMap(clusterData) {
   const jsonData = JSON.parse(fs.readFileSync('public/filtered_data.json', 'utf8'));
   const totalMedals = calculateTotalMedals(jsonData);
 
-  // console.log("Total Medals Data: ", totalMedals);  // Output the total medals data
+  // console.log("Total Medals Data: ", totalMedals); // Output the total medals data
 
   // Find the maximum number of medals for each cluster
   const minOpacity = getConfig("map_min_opacity"); // minimum opacity value
