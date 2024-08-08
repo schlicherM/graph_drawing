@@ -11,7 +11,7 @@
     "d3": "^7.9.0",
     "dotted-map": "^2.2.3",
     "node-fetch": "^3.3.2",
-    "puppeteer": "^22.13.0"
+    "puppeteer": "^22.14.0"
   },
   "keywords": [],
   "author": "",

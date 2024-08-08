@@ -34,17 +34,54 @@ async function generatePointsForCountry(countryFeature) {
   return pointsWithin;
 }
 
-// Function to calculate total medals for each country
-function calculateTotalMedals(data) {
-  let totalMedals = {};
-  data.links.forEach(link => {
-    if (!totalMedals[link.target]) {
-      totalMedals[link.target] = 0;
+function filterLinksByCountry(links, country) {
+  return links.filter(link => link.target === country);
+}
+
+// Calculate medals for each category by country
+function calculateMedalsByCategory(filteredLinks, categories) {
+  let categoryTotals = {};
+  let totalMedalsForCountry = 0;
+
+  filteredLinks.forEach(link => {
+    let category = link.source; // Use link.source to get the category
+    if (category !== "other" && category !== "teams") { // Exclude "other" and "teams"
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = 0;
+      }
+      link.attr.forEach(() => {
+        categoryTotals[category]++;
+        totalMedalsForCountry++; // Increment total medals for the country
+      });
     }
-    totalMedals[link.target] += link.attr.length;
   });
 
-  return totalMedals;
+  return {
+    totalMedalsForCountry,
+    categories: categories.map(category => ({
+      axis: category,
+      value: (categoryTotals[category] / totalMedalsForCountry) || 0 // Normalize by total medals for the country
+    }))
+  };
+}
+
+// Function to calculate total medals for each country
+function calculateTotalMedals(data) {
+  const categories = [...new Set(data.links.map(link => link.source))].filter(category => category !== "other" && category !== "teams"); // Get unique categories from data, excluding "other" and "teams"
+  let medalsPerCountry = {};
+
+  data.nodes.forEach(node => {
+    if (node.noc) { // Ensure node has a country code (noc)
+      let filteredLinks = filterLinksByCountry(data.links, node.id);
+
+      // Calculate medals by category
+      const { totalMedalsForCountry } = calculateMedalsByCategory(filteredLinks, categories);
+
+      medalsPerCountry[node.noc] = totalMedalsForCountry;
+    }
+  });
+
+  return medalsPerCountry;
 }
 
 // Function to calculate opacity using logarithmic scaling
@@ -80,6 +117,8 @@ async function generateMap(clusterData) {
   // load filtered_data.json and calculate medals
   const jsonData = JSON.parse(fs.readFileSync('public/filtered_data.json', 'utf8'));
   const totalMedals = calculateTotalMedals(jsonData);
+
+  // console.log("Total Medals Data: ", totalMedals); // Output the total medals data
 
   // Find the maximum number of medals for each cluster
   const minOpacity = getConfig("map_min_opacity"); // minimum opacity value
@@ -128,10 +167,10 @@ async function generateMap(clusterData) {
   }
 
   const svgMap = map.getSVG({
-    width: 8000,
+    width: 8200,
     height: 4000,
     color: getConfig("map_color_bg-dark"),
-    backgroundColor: getConfig("map_color_bg-light")
+    backgroundColor: null
   });
 
   fs.writeFileSync(`./files/map_clusters.svg`, svgMap);
