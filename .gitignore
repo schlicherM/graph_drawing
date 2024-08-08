@@ -19,5 +19,5 @@ doc/report/*.fdb_latexmk
 doc/report/*.fls
 doc/report/*.log
 doc/report/*.out
-doc/report/report_template.pdf
 doc/report/*.synctex.gz
+doc/report/report.pdf
