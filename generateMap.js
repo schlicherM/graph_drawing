@@ -108,20 +108,13 @@ async function generateMap(clusterData) {
       const rgbaColor = hexToRgba(color, opacity.toFixed(2));
       
       // manually added countries ;)
-      // if(
-      //   countryCode == "SGP" || 
-      //   countryCode == "HKG" || 
-      //   countryCode == "SMR" || 
-      //   countryCode == "TGA" ||
-      //   countryCode == "SAM" ||
-      //   countryCode == "MRI" ||
-      //   countryCode == "BAR" ||
-      //   countryCode == "GRN"
-      // ){
-      //   console.log(countryCode)
-      //   console.log(pointsWithin.length)
-      //   console.log(rgbaColor)
-      // }
+      if(
+        countryCode == "BRN"
+      ){
+        console.log(countryCode)
+        console.log(pointsWithin.length)
+        console.log(rgbaColor)
+      }
 
       pointsWithin.forEach(point => {
         const [lng, lat] = point.geometry.coordinates;

@@ -1,0 +1,63 @@
+\documentclass{article}
+
+
+\usepackage[utf8]{inputenc}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage[]{amsthm}
+\usepackage[]{amssymb}
+\usepackage{hyperref,xurl}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage[ruled,linesnumbered]{algorithm2e} %Algorithms
+\usepackage{tikz}
+\usetikzlibrary{automata,arrows} %Automatons
+
+\definecolor{commentgreen}{rgb}{0.5,0.5,0}
+\newcommand{\note}[1]{\textcolor{commentgreen}{// #1}\\}% colored c-style comment
+\newcommand{\mathnote}[1]{\textcolor{commentgreen}{\text{// #1}}}% for math env
+\newcommand{\D}{\text{d}}% leibniz notation d for derivatives/integrals
+\renewcommand{\qed}{\hfill \ensuremath{\Box}}% white qed box aligned to the right
+\newcommand{\lp}[1]{\left({#1}\right)}% large parentheses, e.g. for vectors or fractions
+\newcommand{\mono}[1]{\texttt{#1}}% monospace text
+\newcommand{\ceil}[1]{\lceil{#1}\rceil}
+\newcommand{\floor}[1]{\lfloor{#1}\rfloor}
+
+\title{
+    GDC 2024 Creative Topic\\
+    Clusters of Champions: Patterns of Success at the Olympics 1992-2020
+}
+\author{Sebastian Dubiel, Tarik Eker, Niklas Munkes \& Michelle Schlicher}
+\date\today
+
+\begin{document}
+\maketitle
+\begingroup
+\let\cleardoublepage\relax
+\let\clearpage\relax
+
+This extended abstract is part of our submission for the Creative Topic of the GDC 2024 (31st Annual Graph Drawing Contest). The poster included with the submission was created during the ``Praktikum Graph Drawing'' course at the University of Tübingen, Summer Term 2024. Copyright 2024 by the author(s).
+
+\section*{Abstract}
+The aim of the poster is to provide a comprehensive visualization of medal distributions at the Olympics across various sports categories from 1992 to 2020. It addresses the following key research questions:
+\begin{enumerate}
+    \item \emph{Are there distinct clusters of countries based on their medal distribution and if so, how are these clusters distributed geographically?}
+    \item \emph{Which are the best-performing countries within and across such clusters?}
+    \item \emph{Which countries have excelled in each medal category since 1992?}
+\end{enumerate}
+
+\subsection*{The Dataset}
+The poster visualizes the Olympic games\footnote{\url{https://mozart.diei.unipg.it/gdcontest/assets/2024/olympics.json}} dataset. We truncated the dataset such that it only includes the Olympic games held between 1992 and 2020. This way we were able to work on a well defined set of participating countries and did not have to adjust for historical geopolitical changes (like for example the unification of Germany). Furthermore, we chose to omit the sports categories \emph{teams} and \emph{other} simply because it is difficult to represent them in an unambiguous way with a single icon.
+
+\subsection*{The Poster}
+Countries are assigned to clusters based on medal distribution similarities using K-means clustering with cosine distance. Each cluster contains a different number of countries and is represented by a unique color. The world map uses these colors to show the \textbf{global} distribution of the clusters, with varying opacity indicating the total number of medals won, displayed on a logarithmic scale. The radar charts depict the characteristic distribution profiles for each cluster and the bar plots compare the top ten countries \textbf{within each cluster}, detailing their medal achievements.
+
+White edges trace the sequence of Olympic host cities. Gold, silver and bronze edges connect the venues to the top countries for each medal class, thus highlighting the leading performers. This offers a detailed overview of Olympic performance, revealing both the geographical and categorical distribution of medals.
+
+\section*{Methods}
+All computations were done with JavaScript and \mono{Node.js}\footnote{\url{https://nodejs.org/en}}. The world map uses the \mono{dotted-map} package\footnote{\url{https://www.npmjs.com/package/dotted-map}} and the radar charts were created with D3\footnote{\url{https://github.com/d3/d3}} using a modified version of the \mono{radarChart} function\footnote{\url{https://gist.github.com/nbremer/21746a9668ffdf6d8242\#file-radarchart-js}}. The final layout was produced using Adobe Photoshop\footnote{\url{https://www.adobe.com/de/products/photoshop/landpa.html}} and Krita\footnote{\url{https://krita.org/en/}}. 
+
+\endgroup
+
+\end{document}
+
